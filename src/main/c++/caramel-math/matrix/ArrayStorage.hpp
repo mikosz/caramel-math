@@ -4,7 +4,7 @@
 #include <cassert>
 #include <array>
 
-#include "setup.hpp"
+#include "../setup.hpp"
 
 namespace caramel_math {
 
@@ -24,10 +24,6 @@ public:
 			}
 		}
 		return data_[row][column];
-	}
-
-	const ScalarType& get(size_t row, size_t column) const noexcept(ErrorHandlerType::THROWS_EXCEPTIONS) {
-		return const_cast<MatrixArrayStorage&>(*this).get(row, column);
 	}
 
 private:

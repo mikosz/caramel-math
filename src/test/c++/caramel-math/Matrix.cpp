@@ -1,7 +1,9 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "caramel-math/Matrix.hpp"
+#include <iostream>
+
+#include "caramel-math/matrix/Matrix.hpp"
 
 using namespace caramel_math;
 
@@ -11,9 +13,7 @@ struct MockStorage {
 
 	static MockStorage* instance;
 
-	MOCK_METHOD2(getNonConst, float& (size_t, size_t));
-
-	MOCK_CONST_METHOD2(getConst, float& (size_t, size_t));
+	MOCK_METHOD2(get, float& (size_t, size_t));
 
 };
 
@@ -22,11 +22,7 @@ MockStorage* MockStorage::instance = nullptr;
 struct MockStorageProxy {
 
 	float& get(size_t row, size_t column) {
-		return MockStorage::instance->getNonConst(row, column);
-	}
-
-	const float& get(size_t row, size_t column) const {
-		return const_cast<const MockStorage*>(MockStorage::instance)->getConst(row, column);
+		return MockStorage::instance->get(row, column);
 	}
 
 };
@@ -53,15 +49,19 @@ TEST_F(StorageProxyFixture, GetCallsStorageGet) {
 	auto matrix = Matrix<float, 1, 2, MockStorageProxy>();
 
 	{
-		EXPECT_CALL(*MockStorage::instance, getNonConst(0, 1));
-		matrix.get(0, 1);
+		auto f = float();
+		EXPECT_CALL(*MockStorage::instance, get(0, 1)).WillOnce(testing::ReturnRef(f));
+		auto& result = matrix.get(0, 1);
+		EXPECT_EQ(&f, &result);
 	}
 
 	{
-		EXPECT_CALL(*MockStorage::instance, getConst(0, 1));
+		auto f = float();
+		EXPECT_CALL(*MockStorage::instance, get(0, 1)).WillOnce(testing::ReturnRef(f));
 
 		const auto& constMatrix = matrix;
-		constMatrix.get(0, 1);
+		const auto& result = constMatrix.get(0, 1);
+		EXPECT_EQ(&f, &result);
 	}
 }
 

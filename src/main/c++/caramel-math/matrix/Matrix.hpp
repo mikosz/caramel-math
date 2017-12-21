@@ -14,12 +14,16 @@ template <
 class Matrix {
 public:
 
-	ScalarType& get(size_t row, size_t column) noexcept(noexcept(StorageType::get(0, 0))) {
+	ScalarType& get(size_t row, size_t column)
+		noexcept(noexcept(std::declval<StorageType&>().get(std::declval<size_t>(), std::declval<size_t>())))
+	{
 		return data_.get(row, column);
 	}
 
-	const ScalarType& get(size_t row, size_t column) const noexcept(noexcept(StorageType::get(0, 0))) {
-		return const_cast<MatrixArrayStorage&>(*this).get(row, column);
+	const ScalarType& get(size_t row, size_t column) const
+		noexcept(noexcept(std::declval<Matrix&>().get(std::declval<size_t>(), std::declval<size_t>())))
+	{
+		return const_cast<Matrix&>(*this).get(row, column);
 	}
 
 private:
