@@ -1,29 +1,30 @@
-#ifndef CARAMELMATH_MATRIXARRAYSTORAGE_HPP__
-#define CARAMELMATH_MATRIXARRAYSTORAGE_HPP__
+#ifndef CARAMELMATH_MATRIX_ARRAYSTORAGE_HPP__
+#define CARAMELMATH_MATRIX_ARRAYSTORAGE_HPP__
 
-#include <cassert>
 #include <array>
 
 #include "../setup.hpp"
 
-namespace caramel_math {
+namespace caramel_math::matrix {
 
 template <
 	class ScalarType,
 	size_t ROWS,
 	size_t COLUMNS,
-	class ErrorHandlerType
+	template <class> class ErrorHandlerType
 	>
-class MatrixArrayStorage {
+class ArrayStorage {
 public:
 
-	ScalarType& get(size_t row, size_t column) noexcept(ErrorHandlerType::THROWS_EXCEPTIONS) {
+	using ErrorHandler = ErrorHandlerType<ScalarType>;
+
+	ScalarType& get(size_t row, size_t column) noexcept(noexcept(ErrorHandler::invalidAccess(0, 0))) {
 		if constexpr (RUNTIME_CHECKS) {
-			if (row < ROWS && column < COLUMNS) {
-				ErrorHandlerType::invalidAccess(row, column);
+			if (row >= ROWS || column >= COLUMNS) {
+				return ErrorHandler::invalidAccess(row, column);
 			}
 		}
-		return data_[row][column];
+		return data_[row * COLUMNS + column];
 	}
 
 private:
@@ -32,6 +33,6 @@ private:
 
 };
 
-} // namespace caramel_math
+} // namespace caramel_math::matrix
 
-#endif /* CARAMELMATH_MATRIXARRAYSTORAGE_HPP__ */
+#endif /* CARAMELMATH_MATRIX_ARRAYSTORAGE_HPP__ */

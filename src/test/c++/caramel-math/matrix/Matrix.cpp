@@ -1,13 +1,29 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include <iostream>
-
 #include "caramel-math/matrix/Matrix.hpp"
 
-using namespace caramel_math;
+using namespace caramel_math::matrix;
 
 namespace /* anonymous */ {
+
+struct NoexceptStorage {
+
+	float& get(size_t, size_t) noexcept {
+		static auto f = 0.0f;
+		return f;
+	}
+
+};
+
+struct PotentiallyThrowingStorage {
+
+	float& get(size_t, size_t) {
+		static auto f = 0.0f;
+		return f;
+	}
+
+};
 
 struct MockStorage {
 
@@ -27,15 +43,15 @@ struct MockStorageProxy {
 
 };
 
-class StorageProxyFixture : public testing::Test {
+class MatrixStorageFixture : public testing::Test {
 public:
 
-	StorageProxyFixture()
+	MatrixStorageFixture()
 	{
 		MockStorage::instance = &storage_;
 	}
 
-	~StorageProxyFixture() {
+	~MatrixStorageFixture() {
 		MockStorage::instance = nullptr;
 	}
 
@@ -45,7 +61,7 @@ private:
 
 };
 
-TEST_F(StorageProxyFixture, GetCallsStorageGet) {
+TEST_F(MatrixStorageFixture, GetCallsStorageGet) {
 	auto matrix = Matrix<float, 1, 2, MockStorageProxy>();
 
 	{
@@ -65,8 +81,20 @@ TEST_F(StorageProxyFixture, GetCallsStorageGet) {
 	}
 }
 
-//TEST(GetIsNoexceptIfStorageGetIsNoexcept) {
-//
-//}
+TEST(MatrixGetTest, GetIsNoexceptIfStorageGetIsNoexcept) {
+	auto matrix = Matrix<float, 12, 34, NoexceptStorage>();
+	static_assert(noexcept(matrix.get(0, 0)));
+
+	const auto& constMatrix = matrix;
+	static_assert(noexcept(constMatrix.get(0, 0)));
+}
+
+TEST(MatrixGetTest, GetIsPotentiallyThrowingIfStorageGetIsPotentiallyThrowing) {
+	auto matrix = Matrix<float, 12, 34, PotentiallyThrowingStorage>();
+	static_assert(!noexcept(matrix.get(0, 0)));
+
+	const auto& constMatrix = matrix;
+	static_assert(!noexcept(constMatrix.get(0, 0)));
+}
 
 } // anonymous namespace

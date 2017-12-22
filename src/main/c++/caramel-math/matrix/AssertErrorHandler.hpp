@@ -1,20 +1,22 @@
-#ifndef CARAMELMATH_ASSERTERRORHANDLER_HPP__
-#define CARAMELMATH_ASSERTERRORHANDLER_HPP__
+#ifndef CARAMELMATH_MATRIX_ASSERTERRORHANDLER_HPP__
+#define CARAMELMATH_MATRIX_ASSERTERRORHANDLER_HPP__
 
 #include <cassert>
 
-namespace caramel_math {
+namespace caramel_math::matrix {
 
-struct AssertErrorHandler {
+template <class ScalarType>
+struct AssertErrorHandler final {
 	
-	static constexpr auto THROWS_EXCEPTIONS = false;
-
-	static void invalidAccess([[maybe_unused]] size_t row, [[maybe_unused]] size_t column) {
+	static ScalarType& invalidAccess([[maybe_unused]] size_t row, [[maybe_unused]] size_t column) noexcept {
 		assert(!"Invalid matrix data access");
+		
+		static auto returnValue = ScalarType();
+		return returnValue;
 	}
 
 };
 
-} // namespace caramel_math
+} // namespace caramel_math::matrix
 
-#endif /* CARAMELMATH_ASSERTERRORHANDLER_HPP__ */
+#endif /* CARAMELMATH_MATRIX_ASSERTERRORHANDLER_HPP__ */
