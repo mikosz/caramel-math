@@ -9,8 +9,9 @@ namespace caramel_math::matrix {
 
 template <
 	class ScalarType,
-	size_t ROWS,
-	size_t COLUMNS,
+	size_t ROWS_VALUE,
+	size_t COLUMNS_VALUE,
+	bool MUTABLE_VALUE,
 	template <class> class ErrorHandlerType
 	>
 class ArrayStorage {
@@ -18,7 +19,17 @@ public:
 
 	using ErrorHandler = ErrorHandlerType<ScalarType>;
 
-	ScalarType& get(size_t row, size_t column) noexcept(noexcept(ErrorHandler::invalidAccess(0, 0))) {
+	using Scalar = ScalarType;
+
+	static constexpr auto ROWS = ROWS_VALUE;
+
+	static constexpr auto COLUMNS = COLUMNS_VALUE;
+
+	static constexpr auto MUTABLE = MUTABLE_VALUE;
+
+	using Reference = std::conditional_t<MUTABLE, ScalarType&, const ScalarType&>;
+
+	Reference get(size_t row, size_t column) noexcept(noexcept(ErrorHandler::invalidAccess(0, 0))) {
 		if constexpr (RUNTIME_CHECKS) {
 			if (row >= ROWS || column >= COLUMNS) {
 				return ErrorHandler::invalidAccess(row, column);

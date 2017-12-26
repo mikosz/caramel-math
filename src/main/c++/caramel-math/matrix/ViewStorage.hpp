@@ -4,6 +4,7 @@
 #include <tuple>
 
 #include "../setup.hpp"
+#include "Matrix.hpp"
 
 namespace caramel_math::matrix {
 
@@ -18,13 +19,21 @@ public:
 
 	using ModifierFunc = ModifierFuncType;
 
+	using Scalar = typename ViewedMatrixType::Scalar;
+
+	static constexpr auto ROWS = ViewedMatrix::COLUMNS;
+
+	static constexpr auto COLUMNS = ViewedMatrix::ROWS;
+
+	static constexpr auto MUTABLE = ViewedMatrix::MUTABLE;
+
 	ViewStorage(ViewedMatrix& viewedMatrix, ModifierFunc modifierFunc = ModifierFunc()) :
 		viewedMatrix_(viewedMatrix),
 		modifierFunc_(std::move(modifierFunc))
 	{
 	}
 
-	auto& get(size_t row, size_t column) {//noexcept(noexcept(ErrorHandler::invalidAccess(0, 0))) {
+	auto& get(size_t row, size_t column) noexcept(noexcept(viewedMatrix_.get(row, column))) {
 		auto modifiedRow = size_t();
 		auto modifiedColumn = size_t();
 		std::tie(modifiedRow, modifiedColumn) = modifierFunc_(row, column);
@@ -39,6 +48,8 @@ private:
 
 };
 
+namespace detail {
+
 struct TransposedModifierFunc {
 
 	std::tuple<size_t, size_t> operator()(size_t row, size_t column) noexcept {
@@ -47,8 +58,15 @@ struct TransposedModifierFunc {
 
 };
 
+} // namespace detail
+
 template <class ViewedMatrixType>
-using TransposedViewStorage = ViewStorage<ViewedMatrixType, TransposedModifierFunc>;
+using TransposedViewStorage = ViewStorage<ViewedMatrixType, detail::TransposedModifierFunc>;
+
+template <class ViewedMatrixType>
+inline auto viewTransposed(ViewedMatrixType& matrix) noexcept {
+	return Matrix<TransposedViewStorage<ViewedMatrixType>>(matrix);
+}
 
 } // namespace caramel_math::matrix
 

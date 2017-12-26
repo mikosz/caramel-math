@@ -7,7 +7,13 @@ using namespace caramel_math::matrix;
 
 namespace /* anonymous */ {
 
-struct NoexceptStorage {
+struct TestStorage {
+	using Scalar = float;
+	static constexpr auto ROWS = 12;
+	static constexpr auto COLUMNS = 34;
+};
+
+struct NoexceptStorage : TestStorage {
 
 	float& get(size_t, size_t) noexcept {
 		static auto f = 0.0f;
@@ -16,7 +22,7 @@ struct NoexceptStorage {
 
 };
 
-struct PotentiallyThrowingStorage {
+struct PotentiallyThrowingStorage : TestStorage {
 
 	float& get(size_t, size_t) {
 		static auto f = 0.0f;
@@ -36,6 +42,10 @@ struct MockStorage {
 MockStorage* MockStorage::instance = nullptr;
 
 struct MockStorageProxy {
+
+	using Scalar = float;
+	static constexpr auto ROWS = 1;
+	static constexpr auto COLUMNS = 2;
 
 	float& get(size_t row, size_t column) {
 		return MockStorage::instance->get(row, column);
@@ -62,7 +72,7 @@ private:
 };
 
 TEST_F(MatrixStorageFixture, GetCallsStorageGet) {
-	auto matrix = Matrix<float, 1, 2, MockStorageProxy>();
+	auto matrix = Matrix<MockStorageProxy>();
 
 	{
 		auto f = float();
@@ -81,8 +91,15 @@ TEST_F(MatrixStorageFixture, GetCallsStorageGet) {
 	}
 }
 
+TEST(MatrixTestCase, MatrixConstantsDeriveFromStorage) {
+	using MatrixType = Matrix<NoexceptStorage>;
+	static_assert(std::is_same_v<MatrixType::Scalar, float>);
+	static_assert(MatrixType::ROWS == 12);
+	static_assert(MatrixType::COLUMNS == 34);
+}
+
 TEST(MatrixGetTest, GetIsNoexceptIfStorageGetIsNoexcept) {
-	auto matrix = Matrix<float, 12, 34, NoexceptStorage>();
+	auto matrix = Matrix<NoexceptStorage>();
 	static_assert(noexcept(matrix.get(0, 0)));
 
 	const auto& constMatrix = matrix;
@@ -90,7 +107,7 @@ TEST(MatrixGetTest, GetIsNoexceptIfStorageGetIsNoexcept) {
 }
 
 TEST(MatrixGetTest, GetIsPotentiallyThrowingIfStorageGetIsPotentiallyThrowing) {
-	auto matrix = Matrix<float, 12, 34, PotentiallyThrowingStorage>();
+	auto matrix = Matrix<PotentiallyThrowingStorage>();
 	static_assert(!noexcept(matrix.get(0, 0)));
 
 	const auto& constMatrix = matrix;
