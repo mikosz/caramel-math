@@ -4,12 +4,14 @@
 namespace caramel_math {
 
 #ifdef _NDEBUG
-const auto IS_DEBUG = false;
+constexpr auto IS_DEBUG = false;
 #else
-const auto IS_DEBUG = true;
+constexpr auto IS_DEBUG = true;
 #endif /* _NDEBUG */
 
-const auto RUNTIME_CHECKS = IS_DEBUG;
+constexpr auto RUNTIME_CHECKS = IS_DEBUG;
+
+constexpr auto FLOAT_EPSILON = 0.0001f;
 
 } // namespace caramel_math
 
