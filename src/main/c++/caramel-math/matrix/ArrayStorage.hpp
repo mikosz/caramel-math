@@ -11,7 +11,6 @@ template <
 	class ScalarType,
 	size_t ROWS_VALUE,
 	size_t COLUMNS_VALUE,
-	bool MUTABLE_VALUE,
 	template <class> class ErrorHandlerType
 	>
 class ArrayStorage {
@@ -25,17 +24,33 @@ public:
 
 	static constexpr auto COLUMNS = COLUMNS_VALUE;
 
-	static constexpr auto MUTABLE = MUTABLE_VALUE;
+	using GetReturnType = std::conditional_t<
+		std::is_arithmetic_v<Scalar>,
+		std::add_const_t<Scalar>, 
+		std::add_const_t<Scalar&>
+		>;
 
-	using Reference = std::conditional_t<MUTABLE, ScalarType&, const ScalarType&>;
-
-	Reference get(size_t row, size_t column) noexcept(noexcept(ErrorHandler::invalidAccess(0, 0))) {
+	GetReturnType get(size_t row, size_t column) const noexcept(
+		noexcept(ErrorHandler::invalidAccess(row, column)))
+	{
 		if constexpr (RUNTIME_CHECKS) {
 			if (row >= ROWS || column >= COLUMNS) {
 				return ErrorHandler::invalidAccess(row, column);
 			}
 		}
 		return data_[row * COLUMNS + column];
+	}
+
+	void set(size_t row, size_t column, Scalar scalar) noexcept(
+		noexcept(ErrorHandler::invalidAccess(row, column)))
+	{
+		if constexpr (RUNTIME_CHECKS) {
+			if (row >= ROWS || column >= COLUMNS) {
+				ErrorHandler::invalidAccess(row, column);
+				return;
+			}
+		}
+		data_[row * COLUMNS + column] = std::move(scalar);
 	}
 
 private:

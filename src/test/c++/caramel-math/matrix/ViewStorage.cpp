@@ -16,12 +16,12 @@ TEST(ViewMatrixTest, TransposedViewHasRowsSwappedWithColumns) {
 	static_assert(TransposedView::ROWS == 2);
 }
 
-TEST(ViewMatrixText, TransposedViewStorageReturnsTransposedData) {
-	auto viewedMatrix = Matrix<ArrayStorage<float, 2, 2, AssertErrorHandler>>();
-	viewedMatrix.get(0, 0) = 0;
-	viewedMatrix.get(0, 1) = 1;
-	viewedMatrix.get(1, 0) = 2;
-	viewedMatrix.get(1, 1) = 3;
+TEST(ViewMatrixText, TransposedViewStorageGetReturnsTransposedData) {
+	auto viewedMatrix = Matrix<ArrayStorage<int, 2, 2, AssertErrorHandler>>();
+	viewedMatrix.set(0, 0, 0);
+	viewedMatrix.set(0, 1, 1);
+	viewedMatrix.set(1, 0, 2);
+	viewedMatrix.set(1, 1, 3);
 
 	auto transposedView = viewTransposed(viewedMatrix);
 
@@ -47,7 +47,33 @@ TEST(ViewMatrixTest, ViewStorageGetIsPotentiallyThrowingIfMatrixGetIsPotentially
 	static_assert(!noexcept(transposedView.get(0, 0)));
 }
 
-TEST(ViewMatrixTest, ViewTransposedReturnsConstMatrixWhenViewingConst) {
-	using ViewedMatrix = Matrix<ArrayStorage<float, 2, 2, ThrowingErrorHandler>>();
-	static_assert(std::is_const_v<decltype(viewTransposed(std::declval<ViewedMatrix>())));
+TEST(ViewMatrixText, TransposedViewStorageSetUpdatesTransposedData) {
+	auto viewedMatrix = Matrix<ArrayStorage<int, 2, 2, AssertErrorHandler>>();
+	viewedMatrix.set(0, 0, 0);
+	viewedMatrix.set(0, 1, 1);
+	viewedMatrix.set(1, 0, 2);
+	viewedMatrix.set(1, 1, 3);
+
+	auto transposedView = viewTransposed(viewedMatrix);
+
+	transposedView.set(1, 0, 5);
+
+	EXPECT_EQ(transposedView.get(1, 0), 5);
+	EXPECT_EQ(viewedMatrix.get(0, 1), 5);
+}
+
+TEST(ViewMatrixTest, ViewStorageSetIsNoexceptIfMatrixSetIsNoexcept) {
+	auto viewedMatrix = Matrix<ArrayStorage<float, 2, 2, AssertErrorHandler>>();
+	static_assert(noexcept(viewedMatrix.set(0, 0, 0.0f)));
+
+	auto transposedView = viewTransposed(viewedMatrix);
+	static_assert(noexcept(transposedView.set(0, 0, 0.0f)));
+}
+
+TEST(ViewMatrixTest, ViewStorageSetIsPotentiallyThrowingIfMatrixSetIsPotentiallyThrowing) {
+	auto viewedMatrix = Matrix<ArrayStorage<float, 2, 2, ThrowingErrorHandler>>();
+	static_assert(!noexcept(viewedMatrix.set(0, 0, 0.0f)));
+
+	auto transposedView = viewTransposed(viewedMatrix);
+	static_assert(!noexcept(transposedView.set(0, 0, 0.0f)));
 }

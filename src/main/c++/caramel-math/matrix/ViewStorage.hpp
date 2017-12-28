@@ -19,13 +19,11 @@ public:
 
 	using ModifierFunc = ModifierFuncType;
 
-	using Scalar = typename ViewedMatrixType::Scalar;
+	using Scalar = typename ViewedMatrix::Scalar;
 
 	static constexpr auto ROWS = ViewedMatrix::COLUMNS;
 
 	static constexpr auto COLUMNS = ViewedMatrix::ROWS;
-
-	static constexpr auto MUTABLE = ViewedMatrix::MUTABLE;
 
 	ViewStorage(ViewedMatrix& viewedMatrix, ModifierFunc modifierFunc = ModifierFunc()) :
 		viewedMatrix_(viewedMatrix),
@@ -33,11 +31,22 @@ public:
 	{
 	}
 
-	auto& get(size_t row, size_t column) noexcept(noexcept(viewedMatrix_.get(row, column))) {
+	decltype(auto) get(size_t row, size_t column) const noexcept(
+		noexcept(viewedMatrix_.get(row, column)))
+	{
 		auto modifiedRow = size_t();
 		auto modifiedColumn = size_t();
 		std::tie(modifiedRow, modifiedColumn) = modifierFunc_(row, column);
 		return viewedMatrix_.get(modifiedRow, modifiedColumn);
+	}
+
+	void set(size_t row, size_t column, Scalar scalar) noexcept(
+		noexcept(viewedMatrix_.set(row, column, scalar)))
+	{
+		auto modifiedRow = size_t();
+		auto modifiedColumn = size_t();
+		std::tie(modifiedRow, modifiedColumn) = modifierFunc_(row, column);
+		return viewedMatrix_.set(modifiedRow, modifiedColumn, std::move(scalar));
 	}
 
 private:
@@ -52,7 +61,7 @@ namespace detail {
 
 struct TransposedModifierFunc {
 
-	std::tuple<size_t, size_t> operator()(size_t row, size_t column) noexcept {
+	std::tuple<size_t, size_t> operator()(size_t row, size_t column) const noexcept {
 		return { column, row };
 	}
 

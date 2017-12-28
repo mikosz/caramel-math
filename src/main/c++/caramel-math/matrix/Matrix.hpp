@@ -1,8 +1,6 @@
 #ifndef CARAMELMATH_MATRIX_MATRIX_HPP__
 #define CARAMELMATH_MATRIX_MATRIX_HPP__
 
-#include <type_traits>
-
 namespace caramel_math::matrix {
 
 template <class StorageType>
@@ -17,17 +15,16 @@ public:
 
 	using StorageType::COLUMNS;
 
-	using StoargeType::MUTABLE;
-
-	Reference get(size_t row, size_t column) noexcept(noexcept(std::declval<StorageType&>().get(row, column)))
+	decltype(auto) get(size_t row, size_t column) const noexcept(
+		noexcept(std::declval<StorageType&>().get(row, column)))
 	{
 		return this->StorageType::get(row, column);
 	}
 
-	std::add_const_t<Reference> get(size_t row, size_t column) const
-		noexcept(noexcept(std::declval<Matrix&>().get(row, column)))
+	void set(size_t row, size_t column, Scalar scalar) noexcept(
+		noexcept(std::declval<StorageType&>().set(row, column, scalar)))
 	{
-		return const_cast<Matrix&>(*this).get(row, column);
+		return this->StorageType::set(row, column, std::move(scalar));
 	}
 
 };
