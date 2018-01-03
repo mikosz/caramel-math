@@ -2,7 +2,11 @@
 #include <gmock/gmock.h>
 
 #include "caramel-math/matrix/Matrix.hpp"
+#include "caramel-math/matrix/ArrayStorage.hpp"
+#include "caramel-math/matrix/ThrowingErrorHandler.hpp"
+#include "caramel-math/ScalarTraits.hpp"
 
+using namespace caramel_math;
 using namespace caramel_math::matrix;
 
 namespace /* anonymous */ {
@@ -142,6 +146,30 @@ TEST(MatrixTest, SetIsNoexceptIfStorageSetIsNoexcept) {
 TEST(MatrixTest, SetIsPotentiallyThrowingIfStorageSetIsPotentiallyThrowing) {
 	auto matrix = Matrix<PotentiallyThrowingStorage>();
 	static_assert(!noexcept(matrix.set(0, 0, 0.0f)));
+}
+
+TEST(MatrixTest, MatrixMultiplicationWorks) {
+	auto matrix2x2 = Matrix<ArrayStorage<BasicScalarTraits<int>, 2, 2, ThrowingErrorHandler>>();
+	matrix2x2.set(0, 0, 0);
+	matrix2x2.set(0, 1, 1);
+	matrix2x2.set(1, 0, 10);
+	matrix2x2.set(1, 1, 11);
+
+	auto matrix2x3 = Matrix<ArrayStorage<BasicScalarTraits<int>, 2, 3, ThrowingErrorHandler>>();
+	matrix2x3.set(0, 0, 0);
+	matrix2x3.set(0, 1, 1);
+	matrix2x3.set(0, 2, 2);
+	matrix2x3.set(1, 0, 10);
+	matrix2x3.set(1, 1, 11);
+	matrix2x3.set(1, 2, 12);
+
+	const auto result = matrix2x2 * matrix2x3;
+	EXPECT_EQ(result.get(0, 0), 10);
+	EXPECT_EQ(result.get(0, 1), 11);
+	EXPECT_EQ(result.get(0, 2), 12);
+	EXPECT_EQ(result.get(1, 0), 110);
+	EXPECT_EQ(result.get(1, 1), 131);
+	EXPECT_EQ(result.get(1, 2), 152);
 }
 
 } // anonymous namespace

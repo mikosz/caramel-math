@@ -8,17 +8,19 @@
 namespace caramel_math::matrix {
 
 template <
-	class ScalarType,
+	class ScalarTraitsType,
 	size_t ROWS_VALUE,
 	size_t COLUMNS_VALUE,
-	template <class> class ErrorHandlerType
+	class ErrorHandlerType
 	>
 class ArrayStorage {
 public:
 
-	using ErrorHandler = ErrorHandlerType<ScalarType>;
+	using ScalarTraits = ScalarTraitsType;
 
-	using Scalar = ScalarType;
+	using ErrorHandler = ErrorHandlerType;
+
+	using Scalar = typename ScalarTraits::Scalar;
 
 	static constexpr auto ROWS = ROWS_VALUE;
 
@@ -30,23 +32,26 @@ public:
 		std::add_const_t<Scalar&>
 		>;
 
+	template <size_t OTHER_COLUMNS>
+	using MultiplicationResultType = ArrayStorage<ScalarTraits, ROWS, OTHER_COLUMNS, ErrorHandlerType>;
+
 	GetReturnType get(size_t row, size_t column) const noexcept(
-		noexcept(ErrorHandler::invalidAccess(row, column)))
+		noexcept(ErrorHandler::invalidAccess<GetReturnType>(row, column)))
 	{
 		if constexpr (RUNTIME_CHECKS) {
 			if (row >= ROWS || column >= COLUMNS) {
-				return ErrorHandler::invalidAccess(row, column);
+				return ErrorHandler::invalidAccess<GetReturnType>(row, column);
 			}
 		}
 		return data_[row * COLUMNS + column];
 	}
 
 	void set(size_t row, size_t column, Scalar scalar) noexcept(
-		noexcept(ErrorHandler::invalidAccess(row, column)))
+		noexcept(ErrorHandler::invalidAccess<GetReturnType>(row, column)))
 	{
 		if constexpr (RUNTIME_CHECKS) {
 			if (row >= ROWS || column >= COLUMNS) {
-				ErrorHandler::invalidAccess(row, column);
+				ErrorHandler::invalidAccess<GetReturnType>(row, column);
 				return;
 			}
 		}
@@ -55,7 +60,7 @@ public:
 
 private:
 
-	std::array<ScalarType, ROWS * COLUMNS> data_;
+	std::array<Scalar, ROWS * COLUMNS> data_;
 
 };
 

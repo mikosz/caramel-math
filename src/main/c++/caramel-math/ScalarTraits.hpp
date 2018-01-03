@@ -8,7 +8,8 @@
 namespace caramel_math {
 
 template <class T>
-struct ScalarTraits {
+struct BasicScalarTraits {
+	using Scalar = T;
 	static constexpr auto ZERO = T(0);
 	static constexpr auto ONE = T(1);
 
@@ -17,7 +18,9 @@ struct ScalarTraits {
 	}
 };
 
-struct ScalarTraits<float> {
+template <>
+struct BasicScalarTraits<float> {
+	using Scalar = float;
 	static constexpr auto ZERO = 0.0f;
 	static constexpr auto ONE = 1.0f;
 	static constexpr auto EPSILON = FLOAT_EPSILON;

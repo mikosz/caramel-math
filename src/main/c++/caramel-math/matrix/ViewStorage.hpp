@@ -25,6 +25,9 @@ public:
 
 	static constexpr auto COLUMNS = ViewedMatrix::ROWS;
 
+	//template <size_t OTHER_COLUMNS>
+	//using MultiplicationResultType = ViewedMatrix::Storage::MultiplicationResultType<OTHER_COLUMNS>;
+
 	ViewStorage(ViewedMatrix& viewedMatrix, ModifierFunc modifierFunc = ModifierFunc()) :
 		viewedMatrix_(viewedMatrix),
 		modifierFunc_(std::move(modifierFunc))

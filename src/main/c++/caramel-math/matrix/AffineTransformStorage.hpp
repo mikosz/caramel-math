@@ -8,16 +8,17 @@
 namespace caramel_math::matrix {
 
 template <
-	class ScalarType,
-	template <class> class ErrorHandlerType,
-	class ScalarTraitsType = ScalarTraits<ScalarType>
+	class ScalarTraitsType,
+	class ErrorHandlerType
 	>
 class AffineTransformStorage {
 public:
 
-	using ErrorHandler = ErrorHandlerType<ScalarType>;
+	using ScalarTraits = ScalarTraitsType;
 
-	using Scalar = ScalarType;
+	using ErrorHandler = ErrorHandlerType<ScalarTraits>;
+
+	using Scalar = ScalarTraits::Scalar;
 
 	static constexpr auto ROWS = 4;
 
@@ -29,7 +30,8 @@ public:
 		std::add_const_t<Scalar&>
 		>;
 
-	using ScalarTraits = ScalarTraitsType;
+	template <size_t OTHER_COLUMNS>
+	using MultiplicationResultType = AffineTransformStorage<ScalarType, ROWS, OTHER_COLUMNS, ErrorHandlerType>;
 
 	GetReturnType get(size_t row, size_t column) const noexcept(
 		noexcept(ErrorHandler::invalidAccess(row, column)))

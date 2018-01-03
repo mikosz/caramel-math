@@ -2,23 +2,24 @@
 #include <gmock/gmock.h>
 
 #include "caramel-math/matrix/ArrayStorage.hpp"
+#include "caramel-math/ScalarTraits.hpp"
 
 using namespace caramel_math;
 using namespace caramel_math::matrix;
 
 namespace /* anonymous */ {
 
-template <class ScalarType>
 struct NoexceptErrorHandler {
 
-	static ScalarType invalidAccess(size_t row, size_t column) noexcept;
+	template <class ReturnType>
+	static ReturnType invalidAccess(size_t row, size_t column) noexcept;
 
 };
 
-template <class ScalarType>
 struct PotentiallyThrowingErrorHandler {
 
-	static ScalarType invalidAccess(size_t row, size_t column);
+	template <class ReturnType>
+	static ReturnType invalidAccess(size_t row, size_t column);
 
 };
 
@@ -32,10 +33,10 @@ struct MockErrorHandler {
 
 MockErrorHandler* MockErrorHandler::instance = nullptr;
 
-template <class ScalarType>
 struct MockErrorHandlerProxy {
 
-	static ScalarType invalidAccess(size_t row, size_t column) noexcept {
+	template <class ReturnType>
+	static ReturnType invalidAccess(size_t row, size_t column) noexcept {
 		return MockErrorHandler::instance->invalidAccess(row, column);
 	}
 
@@ -61,7 +62,7 @@ private:
 } // anonymous namespace
 
 TEST_F(MockErrorHandlerFixture, GetAndSetReturnAndUpdateStoredValue) {
-	auto storage = ArrayStorage<float, 1, 2, MockErrorHandlerProxy>();
+	auto storage = ArrayStorage<BasicScalarTraits<float>, 1, 2, MockErrorHandlerProxy>();
 	storage.set(0, 0, 42.0f);
 	storage.set(0, 1, 666.0f);
 
@@ -72,7 +73,7 @@ TEST_F(MockErrorHandlerFixture, GetAndSetReturnAndUpdateStoredValue) {
 TEST_F(MockErrorHandlerFixture, GetWithOutOfBoundsIndexCallsErrorHandler) {
 	static_assert(RUNTIME_CHECKS);
 
-	auto storage = ArrayStorage<float, 1, 2, MockErrorHandlerProxy>();
+	auto storage = ArrayStorage<BasicScalarTraits<float>, 1, 2, MockErrorHandlerProxy>();
 	
 	const auto errorValue = -42.0f;
 
@@ -91,19 +92,19 @@ TEST_F(MockErrorHandlerFixture, GetWithOutOfBoundsIndexCallsErrorHandler) {
 }
 
 TEST(ArrayStorageTest, GetIsNoexceptIfErrorHandlerInvalidAccessIsNoexcept) {
-	auto storage = ArrayStorage<float, 1, 2, NoexceptErrorHandler>();
+	auto storage = ArrayStorage<BasicScalarTraits<float>, 1, 2, NoexceptErrorHandler>();
 	static_assert(noexcept(storage.get(0, 0)));
 }
 
 TEST(ArrayStorageTest, GetIsPotentiallyThrowingIfErrorHandlerInvalidAccessIsPotentiallyThrowing) {
-	auto storage = ArrayStorage<float, 1, 2, PotentiallyThrowingErrorHandler>();
+	auto storage = ArrayStorage<BasicScalarTraits<float>, 1, 2, PotentiallyThrowingErrorHandler>();
 	static_assert(!noexcept(storage.get(0, 0)));
 }
 
 TEST_F(MockErrorHandlerFixture, SetWithOutOfBoundsIndexCallsErrorHandler) {
 	static_assert(RUNTIME_CHECKS);
 
-	auto storage = ArrayStorage<float, 1, 2, MockErrorHandlerProxy>();
+	auto storage = ArrayStorage<BasicScalarTraits<float>, 1, 2, MockErrorHandlerProxy>();
 
 	const auto errorValue = -42.0f;
 
@@ -120,11 +121,11 @@ TEST_F(MockErrorHandlerFixture, SetWithOutOfBoundsIndexCallsErrorHandler) {
 }
 
 TEST(ArrayStorageTest, SetIsNoexceptIfErrorHandlerInvalidAccessIsNoexcept) {
-	auto storage = ArrayStorage<float, 1, 2, NoexceptErrorHandler>();
+	auto storage = ArrayStorage<BasicScalarTraits<float>, 1, 2, NoexceptErrorHandler>();
 	static_assert(noexcept(storage.set(0, 0, 0.0f)));
 }
 
 TEST(ArrayStorageTest, SetIsPotentiallyThrowingIfErrorHandlerInvalidAccessIsPotentiallyThrowing) {
-	auto storage = ArrayStorage<float, 1, 2, PotentiallyThrowingErrorHandler>();
+	auto storage = ArrayStorage<BasicScalarTraits<float>, 1, 2, PotentiallyThrowingErrorHandler>();
 	static_assert(!noexcept(storage.set(0, 0, 0.0f)));
 }

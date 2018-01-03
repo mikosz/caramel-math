@@ -7,6 +7,8 @@ template <class StorageType>
 class Matrix final : StorageType {
 public:
 
+	using Storage = StorageType;
+
 	using StorageType::StorageType;
 
 	using typename StorageType::Scalar;
@@ -28,6 +30,30 @@ public:
 	}
 
 };
+
+template <class LHSStorageType, class RHSStorageType>
+inline auto operator*(
+	const Matrix<LHSStorageType>& lhs,
+	const Matrix<RHSStorageType>& rhs
+	) noexcept(noexcept(lhs.get(0, 0)) && noexcept(rhs.get(0, 0)))
+{
+	static_assert(LHSStorageType::COLUMNS == RHSStorageType::ROWS, "Incompatible matrix sizes for multiplication");
+	using ResultType = LHSStorageType::MultiplicationResultType<RHSStorageType::COLUMNS>;
+
+	auto result = ResultType();
+
+	for (auto rowIdx = 0u; rowIdx < LHSStorageType::ROWS; ++rowIdx) {
+		for (auto columnIdx = 0u; columnIdx < RHSStorageType::COLUMNS; ++columnIdx) {
+			auto dot = ResultType::ScalarTraits::ZERO;
+			for (auto dotIdx = 0u; dotIdx < LHSStorageType::COLUMNS; ++dotIdx) {
+				dot += lhs.get(rowIdx, dotIdx) * rhs.get(dotIdx, columnIdx);
+			}
+			result.set(rowIdx, columnIdx, dot);
+		}
+	}
+
+	return result;
+}
 
 } // namespace caramel_math::matrix
 

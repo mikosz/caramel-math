@@ -33,10 +33,10 @@ private:
 
 };
 
-template <class ScalarType>
 struct ThrowingErrorHandler final {
 
-	static ScalarType& invalidAccess([[maybe_unused]] size_t row, [[maybe_unused]] size_t column) {
+	template <class ReturnType>
+	static ReturnType invalidAccess([[maybe_unused]] size_t row, [[maybe_unused]] size_t column) {
 		throw InvalidMatrixDataAccess(row, column);
 	}
 
