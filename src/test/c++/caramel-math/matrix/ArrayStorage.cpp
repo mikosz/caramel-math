@@ -3,65 +3,13 @@
 
 #include "caramel-math/matrix/ArrayStorage.hpp"
 #include "caramel-math/ScalarTraits.hpp"
+#include "MockErrorHandler.hpp"
 
 using namespace caramel_math;
 using namespace caramel_math::matrix;
+using namespace caramel_math::matrix::test;
 
-namespace /* anonymous */ {
-
-struct NoexceptErrorHandler {
-
-	template <class ReturnType>
-	static ReturnType invalidAccess(size_t row, size_t column) noexcept;
-
-};
-
-struct PotentiallyThrowingErrorHandler {
-
-	template <class ReturnType>
-	static ReturnType invalidAccess(size_t row, size_t column);
-
-};
-
-struct MockErrorHandler {
-
-	static MockErrorHandler* instance;
-
-	MOCK_METHOD2(invalidAccess, float (size_t, size_t));
-
-};
-
-MockErrorHandler* MockErrorHandler::instance = nullptr;
-
-struct MockErrorHandlerProxy {
-
-	template <class ReturnType>
-	static ReturnType invalidAccess(size_t row, size_t column) noexcept {
-		return MockErrorHandler::instance->invalidAccess(row, column);
-	}
-
-};
-
-class MockErrorHandlerFixture : public testing::Test {
-public:
-
-	MockErrorHandlerFixture() {
-		MockErrorHandler::instance = &mockErrorHandler_;
-	}
-
-	~MockErrorHandlerFixture() {
-		MockErrorHandler::instance = nullptr;
-	}
-
-private:
-
-	MockErrorHandler mockErrorHandler_;
-
-};
-
-} // anonymous namespace
-
-TEST_F(MockErrorHandlerFixture, GetAndSetReturnAndUpdateStoredValue) {
+TEST_F(MockErrorHandlerFixtureTest, GetAndSetReturnAndUpdateStoredValue) {
 	auto storage = ArrayStorage<BasicScalarTraits<float>, 1, 2, MockErrorHandlerProxy>();
 	storage.set(0, 0, 42.0f);
 	storage.set(0, 1, 666.0f);
@@ -70,7 +18,7 @@ TEST_F(MockErrorHandlerFixture, GetAndSetReturnAndUpdateStoredValue) {
 	EXPECT_EQ(storage.get(0, 1), 666.0f);
 }
 
-TEST_F(MockErrorHandlerFixture, GetWithOutOfBoundsIndexCallsErrorHandler) {
+TEST_F(MockErrorHandlerFixtureTest, GetWithOutOfBoundsIndexCallsErrorHandler) {
 	static_assert(RUNTIME_CHECKS);
 
 	auto storage = ArrayStorage<BasicScalarTraits<float>, 1, 2, MockErrorHandlerProxy>();
@@ -101,7 +49,7 @@ TEST(ArrayStorageTest, GetIsPotentiallyThrowingIfErrorHandlerInvalidAccessIsPote
 	static_assert(!noexcept(storage.get(0, 0)));
 }
 
-TEST_F(MockErrorHandlerFixture, SetWithOutOfBoundsIndexCallsErrorHandler) {
+TEST_F(MockErrorHandlerFixtureTest, SetWithOutOfBoundsIndexCallsErrorHandler) {
 	static_assert(RUNTIME_CHECKS);
 
 	auto storage = ArrayStorage<BasicScalarTraits<float>, 1, 2, MockErrorHandlerProxy>();

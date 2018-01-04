@@ -16,9 +16,9 @@ public:
 
 	using ScalarTraits = ScalarTraitsType;
 
-	using ErrorHandler = ErrorHandlerType<ScalarTraits>;
+	using ErrorHandler = ErrorHandlerType;
 
-	using Scalar = ScalarTraits::Scalar;
+	using Scalar = typename ScalarTraits::Scalar;
 
 	static constexpr auto ROWS = 4;
 
@@ -31,14 +31,14 @@ public:
 		>;
 
 	template <size_t OTHER_COLUMNS>
-	using MultiplicationResultType = AffineTransformStorage<ScalarType, ROWS, OTHER_COLUMNS, ErrorHandlerType>;
+	using MultiplicationResultType = AffineTransformStorage<ScalarTraits, ErrorHandlerType>;
 
 	GetReturnType get(size_t row, size_t column) const noexcept(
-		noexcept(ErrorHandler::invalidAccess(row, column)))
+		noexcept(ErrorHandler::invalidAccess<GetReturnType>(row, column)))
 	{
 		if constexpr (RUNTIME_CHECKS) {
 			if (row >= ROWS || column >= COLUMNS) {
-				return ErrorHandler::invalidAccess(row, column);
+				return ErrorHandler::invalidAccess<GetReturnType>(row, column);
 			}
 		}
 
@@ -54,11 +54,11 @@ public:
 	}
 
 	void set(size_t row, size_t column, Scalar scalar) noexcept(
-		noexcept(ErrorHandler::invalidAccess(row, column)))
+		noexcept(ErrorHandler::invalidAccess<GetReturnType>(row, column)))
 	{
 		if constexpr (RUNTIME_CHECKS) {
 			if (row >= ROWS || column >= COLUMNS) {
-				ErrorHandler::invalidAccess(row, column);
+				ErrorHandler::invalidAccess<GetReturnType>(row, column);
 				return;
 			}
 		}
@@ -80,7 +80,7 @@ public:
 
 private:
 
-	std::array<ScalarType, ROWS * COLUMNS> data_;
+	std::array<Scalar, ROWS * COLUMNS> data_;
 
 };
 
