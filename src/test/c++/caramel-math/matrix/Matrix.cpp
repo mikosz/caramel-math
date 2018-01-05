@@ -87,7 +87,10 @@ private:
 
 };
 
-TEST_F(MatrixStorageFixture, GetCallsStorageGet) {
+class MatrixTest : public MatrixStorageFixture {
+};
+
+TEST_F(MatrixTest, GetCallsStorageGet) {
 	auto matrix = Matrix<MockStorageProxy>();
 
 	{
@@ -107,7 +110,7 @@ TEST_F(MatrixStorageFixture, GetCallsStorageGet) {
 	}
 }
 
-TEST_F(MatrixStorageFixture, SetCallsStorageSet) {
+TEST_F(MatrixTest, SetCallsStorageSet) {
 	auto matrix = Matrix<MockStorageProxy>();
 
 	const auto f = 42.0f;
@@ -115,14 +118,14 @@ TEST_F(MatrixStorageFixture, SetCallsStorageSet) {
 	matrix.set(0, 1, f);
 }
 
-TEST(MatrixTest, MatrixConstantsDeriveFromStorage) {
+TEST_F(MatrixTest, MatrixConstantsDeriveFromStorage) {
 	using MatrixType = Matrix<NoexceptStorage>;
 	static_assert(std::is_same_v<MatrixType::Scalar, float>);
 	static_assert(MatrixType::ROWS == 12);
 	static_assert(MatrixType::COLUMNS == 34);
 }
 
-TEST(MatrixTest, GetIsNoexceptIfStorageGetIsNoexcept) {
+TEST_F(MatrixTest, GetIsNoexceptIfStorageGetIsNoexcept) {
 	auto matrix = Matrix<NoexceptStorage>();
 	static_assert(noexcept(matrix.get(0, 0)));
 
@@ -130,7 +133,7 @@ TEST(MatrixTest, GetIsNoexceptIfStorageGetIsNoexcept) {
 	static_assert(noexcept(constMatrix.get(0, 0)));
 }
 
-TEST(MatrixGetTest, GetIsPotentiallyThrowingIfStorageGetIsPotentiallyThrowing) {
+TEST_F(MatrixTest, GetIsPotentiallyThrowingIfStorageGetIsPotentiallyThrowing) {
 	auto matrix = Matrix<PotentiallyThrowingStorage>();
 	static_assert(!noexcept(matrix.get(0, 0)));
 
@@ -138,17 +141,17 @@ TEST(MatrixGetTest, GetIsPotentiallyThrowingIfStorageGetIsPotentiallyThrowing) {
 	static_assert(!noexcept(constMatrix.get(0, 0)));
 }
 
-TEST(MatrixTest, SetIsNoexceptIfStorageSetIsNoexcept) {
+TEST_F(MatrixTest, SetIsNoexceptIfStorageSetIsNoexcept) {
 	auto matrix = Matrix<NoexceptStorage>();
 	static_assert(noexcept(matrix.set(0, 0, 0.0f)));
 }
 
-TEST(MatrixTest, SetIsPotentiallyThrowingIfStorageSetIsPotentiallyThrowing) {
+TEST_F(MatrixTest, SetIsPotentiallyThrowingIfStorageSetIsPotentiallyThrowing) {
 	auto matrix = Matrix<PotentiallyThrowingStorage>();
 	static_assert(!noexcept(matrix.set(0, 0, 0.0f)));
 }
 
-TEST(MatrixTest, MatrixMultiplicationWorks) {
+TEST_F(MatrixTest, MatrixMultiplicationWorks) {
 	auto matrix2x2 = Matrix<ArrayStorage<BasicScalarTraits<int>, 2, 2, ThrowingErrorHandler>>();
 	matrix2x2.set(0, 0, 0);
 	matrix2x2.set(0, 1, 1);

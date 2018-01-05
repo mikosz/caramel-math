@@ -9,7 +9,12 @@ using namespace caramel_math;
 using namespace caramel_math::matrix;
 using namespace caramel_math::matrix::test;
 
-TEST_F(MockErrorHandlerFixtureTest, GetAndSetReturnAndUpdateStoredValue) {
+namespace /* anonymous */ {
+
+class AffineTransformStorageTest : public MockErrorHandlerFixtureTest {
+};
+
+TEST_F(AffineTransformStorageTest, GetAndSetReturnAndUpdateStoredValue) {
 	auto storage = AffineTransformStorage<BasicScalarTraits<int>, MockErrorHandlerProxy>();
 
 	storage.set(0, 0, 0);
@@ -44,7 +49,7 @@ TEST_F(MockErrorHandlerFixtureTest, GetAndSetReturnAndUpdateStoredValue) {
 	EXPECT_EQ(storage.get(3, 3), 1);
 }
 
-TEST_F(MockErrorHandlerFixtureTest, SetCallsInvalidValueForValuesNotMatchingAnAffineTransformMatrix) {
+TEST_F(AffineTransformStorageTest, SetCallsInvalidValueForValuesNotMatchingAnAffineTransformMatrix) {
 	auto storage = AffineTransformStorage<BasicScalarTraits<int>, MockErrorHandlerProxy>();
 
 	{
@@ -60,3 +65,65 @@ TEST_F(MockErrorHandlerFixtureTest, SetCallsInvalidValueForValuesNotMatchingAnAf
 	storage.set(3, 2, 1);
 	storage.set(3, 3, 0);
 }
+
+TEST_F(AffineTransformStorageTest, GetWithOutOfBoundsIndexCallsErrorHandler) {
+	static_assert(RUNTIME_CHECKS);
+
+	auto storage = AffineTransformStorage<BasicScalarTraits<int>, MockErrorHandlerProxy>();
+
+	const auto errorValue = -42;
+
+	{
+		EXPECT_CALL(*MockErrorHandler::instance, invalidAccess(4, 0)).WillOnce(testing::Return(errorValue));
+		const auto value = storage.get(4, 0);
+		EXPECT_EQ(errorValue, value);
+	}
+
+	{
+		EXPECT_CALL(*MockErrorHandler::instance, invalidAccess(0, 4)).WillOnce(testing::Return(errorValue));
+		const auto value = storage.get(0, 4);
+		EXPECT_EQ(errorValue, value);
+	}
+
+}
+
+TEST_F(AffineTransformStorageTest, GetIsNoexceptIfErrorHandlerInvalidAccessIsNoexcept) {
+	auto storage = AffineTransformStorage<BasicScalarTraits<float>, NoexceptErrorHandler>();
+	static_assert(noexcept(storage.get(0, 0)));
+}
+
+TEST_F(AffineTransformStorageTest, GetIsPotentiallyThrowingIfErrorHandlerInvalidAccessIsPotentiallyThrowing) {
+	auto storage = AffineTransformStorage<BasicScalarTraits<float>, PotentiallyThrowingErrorHandler>();
+	static_assert(!noexcept(storage.get(0, 0)));
+}
+
+TEST_F(AffineTransformStorageTest, SetWithOutOfBoundsIndexCallsErrorHandler) {
+	static_assert(RUNTIME_CHECKS);
+
+	auto storage = AffineTransformStorage<BasicScalarTraits<int>, MockErrorHandlerProxy>();
+
+	const auto errorValue = -42;
+
+	{
+		EXPECT_CALL(*MockErrorHandler::instance, invalidAccess(4, 0)).WillOnce(testing::Return(errorValue));
+		storage.set(4, 0, 0);
+	}
+
+	{
+		EXPECT_CALL(*MockErrorHandler::instance, invalidAccess(0, 4)).WillOnce(testing::Return(errorValue));
+		storage.set(0, 4, 0);
+	}
+
+}
+
+TEST_F(AffineTransformStorageTest, SetIsNoexceptIfErrorHandlerInvalidAccessIsNoexcept) {
+	auto storage = AffineTransformStorage<BasicScalarTraits<float>, NoexceptErrorHandler>();
+	static_assert(noexcept(storage.set(0, 0, 0.0f)));
+}
+
+TEST_F(AffineTransformStorageTest, SetIsPotentiallyThrowingIfErrorHandlerInvalidAccessIsPotentiallyThrowing) {
+	auto storage = AffineTransformStorage<BasicScalarTraits<float>, PotentiallyThrowingErrorHandler>();
+	static_assert(!noexcept(storage.set(0, 0, 0.0f)));
+}
+
+} // anonymous namespace

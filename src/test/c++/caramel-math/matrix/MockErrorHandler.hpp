@@ -30,13 +30,11 @@ struct MockErrorHandler {
 
 	static MockErrorHandler* instance;
 
-	MOCK_METHOD2(invalidAccess, float (size_t, size_t));
+	MOCK_METHOD2(invalidAccess, int (size_t, size_t));
 
 	MOCK_METHOD4(invalidValue, void (size_t, size_t, int, int));
 
 };
-
-MockErrorHandler* MockErrorHandler::instance = nullptr;
 
 struct MockErrorHandlerProxy {
 

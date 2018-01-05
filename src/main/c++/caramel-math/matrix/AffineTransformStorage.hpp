@@ -80,7 +80,7 @@ public:
 
 private:
 
-	std::array<Scalar, ROWS * COLUMNS> data_;
+	std::array<Scalar, (ROWS - 1) * COLUMNS> data_;
 
 };
 

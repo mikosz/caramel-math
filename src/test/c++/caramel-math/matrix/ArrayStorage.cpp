@@ -9,21 +9,26 @@ using namespace caramel_math;
 using namespace caramel_math::matrix;
 using namespace caramel_math::matrix::test;
 
-TEST_F(MockErrorHandlerFixtureTest, GetAndSetReturnAndUpdateStoredValue) {
-	auto storage = ArrayStorage<BasicScalarTraits<float>, 1, 2, MockErrorHandlerProxy>();
-	storage.set(0, 0, 42.0f);
-	storage.set(0, 1, 666.0f);
+namespace /* anonymous */ {
 
-	EXPECT_EQ(storage.get(0, 0), 42.0f);
-	EXPECT_EQ(storage.get(0, 1), 666.0f);
+class ArrayStorageTest : public MockErrorHandlerFixtureTest {
+};
+
+TEST_F(ArrayStorageTest, GetAndSetReturnAndUpdateStoredValue) {
+	auto storage = ArrayStorage<BasicScalarTraits<int>, 1, 2, MockErrorHandlerProxy>();
+	storage.set(0, 0, 42);
+	storage.set(0, 1, 666);
+
+	EXPECT_EQ(storage.get(0, 0), 42);
+	EXPECT_EQ(storage.get(0, 1), 666);
 }
 
-TEST_F(MockErrorHandlerFixtureTest, GetWithOutOfBoundsIndexCallsErrorHandler) {
+TEST_F(ArrayStorageTest, GetWithOutOfBoundsIndexCallsErrorHandler) {
 	static_assert(RUNTIME_CHECKS);
 
-	auto storage = ArrayStorage<BasicScalarTraits<float>, 1, 2, MockErrorHandlerProxy>();
+	auto storage = ArrayStorage<BasicScalarTraits<int>, 1, 2, MockErrorHandlerProxy>();
 	
-	const auto errorValue = -42.0f;
+	const auto errorValue = -42;
 
 	{
 		EXPECT_CALL(*MockErrorHandler::instance, invalidAccess(1, 0)).WillOnce(testing::Return(errorValue));
@@ -39,41 +44,43 @@ TEST_F(MockErrorHandlerFixtureTest, GetWithOutOfBoundsIndexCallsErrorHandler) {
 
 }
 
-TEST(ArrayStorageTest, GetIsNoexceptIfErrorHandlerInvalidAccessIsNoexcept) {
+TEST_F(ArrayStorageTest, GetIsNoexceptIfErrorHandlerInvalidAccessIsNoexcept) {
 	auto storage = ArrayStorage<BasicScalarTraits<float>, 1, 2, NoexceptErrorHandler>();
 	static_assert(noexcept(storage.get(0, 0)));
 }
 
-TEST(ArrayStorageTest, GetIsPotentiallyThrowingIfErrorHandlerInvalidAccessIsPotentiallyThrowing) {
+TEST_F(ArrayStorageTest, GetIsPotentiallyThrowingIfErrorHandlerInvalidAccessIsPotentiallyThrowing) {
 	auto storage = ArrayStorage<BasicScalarTraits<float>, 1, 2, PotentiallyThrowingErrorHandler>();
 	static_assert(!noexcept(storage.get(0, 0)));
 }
 
-TEST_F(MockErrorHandlerFixtureTest, SetWithOutOfBoundsIndexCallsErrorHandler) {
+TEST_F(ArrayStorageTest, SetWithOutOfBoundsIndexCallsErrorHandler) {
 	static_assert(RUNTIME_CHECKS);
 
-	auto storage = ArrayStorage<BasicScalarTraits<float>, 1, 2, MockErrorHandlerProxy>();
+	auto storage = ArrayStorage<BasicScalarTraits<int>, 1, 2, MockErrorHandlerProxy>();
 
-	const auto errorValue = -42.0f;
+	const auto errorValue = -42;
 
 	{
 		EXPECT_CALL(*MockErrorHandler::instance, invalidAccess(1, 0)).WillOnce(testing::Return(errorValue));
-		storage.set(1, 0, 0.0f);
+		storage.set(1, 0, 0);
 	}
 
 	{
 		EXPECT_CALL(*MockErrorHandler::instance, invalidAccess(0, 2)).WillOnce(testing::Return(errorValue));
-		storage.set(0, 2, 0.0f);
+		storage.set(0, 2, 0);
 	}
 
 }
 
-TEST(ArrayStorageTest, SetIsNoexceptIfErrorHandlerInvalidAccessIsNoexcept) {
+TEST_F(ArrayStorageTest, SetIsNoexceptIfErrorHandlerInvalidAccessIsNoexcept) {
 	auto storage = ArrayStorage<BasicScalarTraits<float>, 1, 2, NoexceptErrorHandler>();
 	static_assert(noexcept(storage.set(0, 0, 0.0f)));
 }
 
-TEST(ArrayStorageTest, SetIsPotentiallyThrowingIfErrorHandlerInvalidAccessIsPotentiallyThrowing) {
+TEST_F(ArrayStorageTest, SetIsPotentiallyThrowingIfErrorHandlerInvalidAccessIsPotentiallyThrowing) {
 	auto storage = ArrayStorage<BasicScalarTraits<float>, 1, 2, PotentiallyThrowingErrorHandler>();
 	static_assert(!noexcept(storage.set(0, 0, 0.0f)));
 }
+
+} // anonymous namespace
