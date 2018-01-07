@@ -16,6 +16,17 @@ struct AssertErrorHandler final {
 		return returnValue;
 	}
 
+	template <class ScalarType>
+	static void invalidValue(
+		[[maybe_unused]] size_t row,
+		[[maybe_unused]] size_t column,
+		[[maybe_unused]] ScalarType actualValue,
+		[[maybe_unused]] ScalarType expectedValue
+		) noexcept
+	{
+		assert(!"Invalid matrix data value");
+	}
+
 };
 
 } // namespace caramel_math::matrix

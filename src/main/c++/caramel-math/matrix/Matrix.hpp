@@ -40,7 +40,9 @@ inline auto operator*(
 	) noexcept(noexcept(lhs.get(0, 0)) && noexcept(rhs.get(0, 0)))
 {
 	static_assert(LHSStorageType::COLUMNS == RHSStorageType::ROWS, "Incompatible matrix sizes for multiplication");
-	using ResultType = BinaryOperatorResultType<LHSStorageType, RHSStorageType, LHSStorageType::ROWS, RHSStorageType::COLUMNS>;
+	using ResultStorageType =
+		BinaryOperatorResultType<LHSStorageType, RHSStorageType, LHSStorageType::ROWS, RHSStorageType::COLUMNS>;
+	using ResultType = Matrix<ResultStorageType>;
 
 	auto result = ResultType();
 
@@ -55,6 +57,16 @@ inline auto operator*(
 	}
 
 	return result;
+}
+
+template <class LHSStorageType, class RHSStorageType>
+inline auto& operator*=(
+	Matrix<LHSStorageType>& lhs,
+	const Matrix<RHSStorageType>& rhs
+	) noexcept(noexcept(lhs.get(0, 0)) && noexcept(rhs.get(0, 0)))
+{
+	lhs = lhs * rhs;
+	return lhs;
 }
 
 } // namespace caramel_math::matrix

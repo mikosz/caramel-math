@@ -3,6 +3,7 @@
 
 #include "caramel-math/matrix/Matrix.hpp"
 #include "caramel-math/matrix/ArrayStorage.hpp"
+#include "caramel-math/matrix/AffineTransformStorage.hpp"
 #include "caramel-math/matrix/ThrowingErrorHandler.hpp"
 #include "caramel-math/ScalarTraits.hpp"
 
@@ -167,12 +168,99 @@ TEST_F(MatrixTest, MatrixMultiplicationWorks) {
 	matrix2x3.set(1, 2, 12);
 
 	const auto result = matrix2x2 * matrix2x3;
+
+	static_assert(std::is_same_v<
+		decltype(result),
+		const Matrix<ArrayStorage<BasicScalarTraits<int>, 2, 3, ThrowingErrorHandler>>
+		>);
+
 	EXPECT_EQ(result.get(0, 0), 10);
 	EXPECT_EQ(result.get(0, 1), 11);
 	EXPECT_EQ(result.get(0, 2), 12);
 	EXPECT_EQ(result.get(1, 0), 110);
 	EXPECT_EQ(result.get(1, 1), 131);
 	EXPECT_EQ(result.get(1, 2), 152);
+}
+
+TEST_F(MatrixTest, MatrixMultiplicationWithAssignmentWorks) {
+	auto lhsMatrix = Matrix<ArrayStorage<BasicScalarTraits<int>, 2, 2, ThrowingErrorHandler>>();
+	lhsMatrix.set(0, 0, 0);
+	lhsMatrix.set(0, 1, 1);
+	lhsMatrix.set(1, 0, 10);
+	lhsMatrix.set(1, 1, 11);
+
+	auto rhsMatrix = Matrix<ArrayStorage<BasicScalarTraits<int>, 2, 2, ThrowingErrorHandler>>();
+	rhsMatrix.set(0, 0, 0);
+	rhsMatrix.set(0, 1, 2);
+	rhsMatrix.set(1, 0, 20);
+	rhsMatrix.set(1, 1, 22);
+
+	const auto& result = (lhsMatrix *= rhsMatrix);
+
+	static_assert(std::is_same_v<
+		decltype(result),
+		const Matrix<ArrayStorage<BasicScalarTraits<int>, 2, 2, ThrowingErrorHandler>>&
+		>);
+
+	EXPECT_EQ(&result, &lhsMatrix);
+	EXPECT_EQ(result.get(0, 0), 20);
+	EXPECT_EQ(result.get(0, 1), 22);
+	EXPECT_EQ(result.get(1, 0), 220);
+	EXPECT_EQ(result.get(1, 1), 262);
+}
+
+TEST_F(MatrixTest, AffineTransformMatrixMultiplicationWorks) {
+	auto lhsMatrix = Matrix<AffineTransformStorage<BasicScalarTraits<int>, ThrowingErrorHandler>>();
+	lhsMatrix.set(0, 0, 0);
+	lhsMatrix.set(0, 1, 1);
+	lhsMatrix.set(0, 2, 2);
+	lhsMatrix.set(0, 3, 3);
+	lhsMatrix.set(1, 0, 10);
+	lhsMatrix.set(1, 1, 11);
+	lhsMatrix.set(1, 2, 12);
+	lhsMatrix.set(1, 3, 13);
+	lhsMatrix.set(2, 0, 20);
+	lhsMatrix.set(2, 1, 21);
+	lhsMatrix.set(2, 2, 22);
+	lhsMatrix.set(2, 3, 23);
+
+	auto rhsMatrix = Matrix<AffineTransformStorage<BasicScalarTraits<int>, ThrowingErrorHandler>>();
+	rhsMatrix.set(0, 0, 0);
+	rhsMatrix.set(0, 1, 1);
+	rhsMatrix.set(0, 2, 2);
+	rhsMatrix.set(0, 3, 3);
+	rhsMatrix.set(1, 0, 20);
+	rhsMatrix.set(1, 1, 21);
+	rhsMatrix.set(1, 2, 22);
+	rhsMatrix.set(1, 3, 23);
+	rhsMatrix.set(2, 0, 40);
+	rhsMatrix.set(2, 1, 41);
+	rhsMatrix.set(2, 2, 42);
+	rhsMatrix.set(2, 3, 43);
+
+	const auto result = lhsMatrix * rhsMatrix;
+
+	static_assert(std::is_same_v<
+		decltype(result),
+		const Matrix<AffineTransformStorage<BasicScalarTraits<int>, ThrowingErrorHandler>>
+		>);
+
+	EXPECT_EQ(result.get(0, 0), 100);
+	EXPECT_EQ(result.get(0, 1), 103);
+	EXPECT_EQ(result.get(0, 2), 106);
+	EXPECT_EQ(result.get(0, 3), 112);
+	EXPECT_EQ(result.get(1, 0), 700);
+	EXPECT_EQ(result.get(1, 1), 733);
+	EXPECT_EQ(result.get(1, 2), 766);
+	EXPECT_EQ(result.get(1, 3), 812);
+	EXPECT_EQ(result.get(2, 0), 1300);
+	EXPECT_EQ(result.get(2, 1), 1363);
+	EXPECT_EQ(result.get(2, 2), 1426);
+	EXPECT_EQ(result.get(2, 3), 1512);
+	EXPECT_EQ(result.get(3, 0), 0);
+	EXPECT_EQ(result.get(3, 1), 0);
+	EXPECT_EQ(result.get(3, 2), 0);
+	EXPECT_EQ(result.get(3, 3), 1);
 }
 
 } // anonymous namespace
