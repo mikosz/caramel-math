@@ -30,9 +30,6 @@ public:
 		std::add_const_t<Scalar&>
 		>;
 
-	template <size_t OTHER_COLUMNS>
-	using MultiplicationResultType = AffineTransformStorage<ScalarTraits, ErrorHandlerType>;
-
 	GetReturnType get(size_t row, size_t column) const noexcept(
 		noexcept(ErrorHandler::invalidAccess<GetReturnType>(row, column)))
 	{

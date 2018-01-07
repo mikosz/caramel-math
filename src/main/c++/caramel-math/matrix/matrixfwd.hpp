@@ -12,9 +12,21 @@ template <
 	class ScalarType,
 	size_t ROWS_VALUE,
 	size_t COLUMNS_VALUE,
-	template <class> class ErrorHandlerType
+	class ErrorHandlerType
 	>
 class ArrayStorage;
+
+template <
+	class ScalarTraitsType,
+	class ErrorHandlerType
+	>
+class AffineTransformStorage;
+
+template <
+	class ViewedMatrixType,
+	class ModifierFuncType
+	>
+class ViewStorage;
 
 } // namespace caramel_math::matrix
 

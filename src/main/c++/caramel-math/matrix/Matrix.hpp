@@ -1,6 +1,8 @@
 #ifndef CARAMELMATH_MATRIX_MATRIX_HPP__
 #define CARAMELMATH_MATRIX_MATRIX_HPP__
 
+#include "storage-traits.hpp"
+
 namespace caramel_math::matrix {
 
 template <class StorageType>
@@ -38,7 +40,7 @@ inline auto operator*(
 	) noexcept(noexcept(lhs.get(0, 0)) && noexcept(rhs.get(0, 0)))
 {
 	static_assert(LHSStorageType::COLUMNS == RHSStorageType::ROWS, "Incompatible matrix sizes for multiplication");
-	using ResultType = LHSStorageType::MultiplicationResultType<RHSStorageType::COLUMNS>;
+	using ResultType = BinaryOperatorResultType<LHSStorageType, RHSStorageType, LHSStorageType::ROWS, RHSStorageType::COLUMNS>;
 
 	auto result = ResultType();
 
