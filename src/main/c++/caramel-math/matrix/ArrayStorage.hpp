@@ -32,6 +32,15 @@ public:
 		std::add_const_t<Scalar&>
 		>;
 
+	ArrayStorage() noexcept = default;
+
+	template <class... CompatibleScalars>
+	ArrayStorage(CompatibleScalars&&... values) noexcept :
+		data_{ std::move(values)... }
+	{
+		static_assert(sizeof...(values) == ROWS * COLUMNS);
+	}
+
 	GetReturnType get(size_t row, size_t column) const noexcept(
 		noexcept(ErrorHandler::invalidAccess<GetReturnType>(row, column)))
 	{

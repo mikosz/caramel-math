@@ -4,6 +4,7 @@
 #include "caramel-math/matrix/Matrix.hpp"
 #include "caramel-math/matrix/ArrayStorage.hpp"
 #include "caramel-math/matrix/AffineTransformStorage.hpp"
+#include "caramel-math/matrix/AssertErrorHandler.hpp"
 #include "caramel-math/matrix/ThrowingErrorHandler.hpp"
 #include "caramel-math/ScalarTraits.hpp"
 
@@ -12,13 +13,16 @@ using namespace caramel_math::matrix;
 
 namespace /* anonymous */ {
 
+template <size_t ROWS_VALUE, size_t COLUMNS_VALUE>
 struct TestStorage {
-	using Scalar = float;
-	static constexpr auto ROWS = 12;
-	static constexpr auto COLUMNS = 34;
+	using ScalarTraits = BasicScalarTraits<float>;
+	using Scalar = typename ScalarTraits::Scalar;
+	static constexpr auto ROWS = ROWS_VALUE;
+	static constexpr auto COLUMNS = COLUMNS_VALUE;
 };
 
-struct NoexceptStorage : TestStorage {
+template <size_t ROWS_VALUE, size_t COLUMNS_VALUE>
+struct NoexceptStorage : TestStorage<ROWS_VALUE, COLUMNS_VALUE> {
 
 	float get(size_t, size_t) const noexcept {
 		static auto f = 0.0f;
@@ -30,7 +34,8 @@ struct NoexceptStorage : TestStorage {
 
 };
 
-struct PotentiallyThrowingStorage : TestStorage {
+template <size_t ROWS_VALUE, size_t COLUMNS_VALUE>
+struct PotentiallyThrowingStorage : TestStorage<ROWS_VALUE, COLUMNS_VALUE> {
 
 	float get(size_t, size_t) const {
 		static auto f = 0.0f;
@@ -91,6 +96,18 @@ private:
 class MatrixTest : public MatrixStorageFixture {
 };
 
+TEST_F(MatrixTest, ZeroMatrixHasZeroesEverywhere) {
+	using Matrix = Matrix<ArrayStorage<BasicScalarTraits<int>, 3, 2, AssertErrorHandler>>;
+	const auto zero = Matrix::ZERO;
+
+	EXPECT_EQ(zero.get(0, 0), 0);
+	EXPECT_EQ(zero.get(0, 1), 0);
+	EXPECT_EQ(zero.get(1, 0), 0);
+	EXPECT_EQ(zero.get(1, 1), 0);
+	EXPECT_EQ(zero.get(2, 0), 0);
+	EXPECT_EQ(zero.get(2, 1), 0);
+}
+
 TEST_F(MatrixTest, GetCallsStorageGet) {
 	auto matrix = Matrix<MockStorageProxy>();
 
@@ -120,14 +137,14 @@ TEST_F(MatrixTest, SetCallsStorageSet) {
 }
 
 TEST_F(MatrixTest, MatrixConstantsDeriveFromStorage) {
-	using MatrixType = Matrix<NoexceptStorage>;
+	using MatrixType = Matrix<NoexceptStorage<12, 34>>;
 	static_assert(std::is_same_v<MatrixType::Scalar, float>);
 	static_assert(MatrixType::ROWS == 12);
 	static_assert(MatrixType::COLUMNS == 34);
 }
 
 TEST_F(MatrixTest, GetIsNoexceptIfStorageGetIsNoexcept) {
-	auto matrix = Matrix<NoexceptStorage>();
+	auto matrix = Matrix<NoexceptStorage<12, 34>>();
 	static_assert(noexcept(matrix.get(0, 0)));
 
 	const auto& constMatrix = matrix;
@@ -135,7 +152,7 @@ TEST_F(MatrixTest, GetIsNoexceptIfStorageGetIsNoexcept) {
 }
 
 TEST_F(MatrixTest, GetIsPotentiallyThrowingIfStorageGetIsPotentiallyThrowing) {
-	auto matrix = Matrix<PotentiallyThrowingStorage>();
+	auto matrix = Matrix<PotentiallyThrowingStorage<12, 34>>();
 	static_assert(!noexcept(matrix.get(0, 0)));
 
 	const auto& constMatrix = matrix;
@@ -143,12 +160,12 @@ TEST_F(MatrixTest, GetIsPotentiallyThrowingIfStorageGetIsPotentiallyThrowing) {
 }
 
 TEST_F(MatrixTest, SetIsNoexceptIfStorageSetIsNoexcept) {
-	auto matrix = Matrix<NoexceptStorage>();
+	auto matrix = Matrix<NoexceptStorage<12, 34>>();
 	static_assert(noexcept(matrix.set(0, 0, 0.0f)));
 }
 
 TEST_F(MatrixTest, SetIsPotentiallyThrowingIfStorageSetIsPotentiallyThrowing) {
-	auto matrix = Matrix<PotentiallyThrowingStorage>();
+	auto matrix = Matrix<PotentiallyThrowingStorage<12, 34>>();
 	static_assert(!noexcept(matrix.set(0, 0, 0.0f)));
 }
 
@@ -261,6 +278,18 @@ TEST_F(MatrixTest, AffineTransformMatrixMultiplicationWorks) {
 	EXPECT_EQ(result.get(3, 1), 0);
 	EXPECT_EQ(result.get(3, 2), 0);
 	EXPECT_EQ(result.get(3, 3), 1);
+}
+
+TEST_F(MatrixTest, MultiplicationIsNoexceptIfStorageIsNoexcept) {
+	using Matrix = Matrix<NoexceptStorage<12, 12>>;
+	static_assert(noexcept(std::declval<Matrix>() * std::declval<Matrix>()));
+	static_assert(noexcept(std::declval<Matrix&>() *= std::declval<Matrix>()));
+}
+
+TEST_F(MatrixTest, MultiplicationIsPotentiallyThrowingIfStorageIsPotentiallyThrowing) {
+	using Matrix = Matrix<PotentiallyThrowingStorage<12, 12>>;
+	static_assert(!noexcept(std::declval<Matrix>() * std::declval<Matrix>()));
+	static_assert(!noexcept(std::declval<Matrix&>() *= std::declval<Matrix>()));
 }
 
 } // anonymous namespace

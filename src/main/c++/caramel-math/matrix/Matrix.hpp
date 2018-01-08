@@ -19,6 +19,10 @@ public:
 
 	using StorageType::COLUMNS;
 
+	static Matrix ZERO;
+
+	static Matrix IDENTITY;
+
 	decltype(auto) get(size_t row, size_t column) const noexcept(
 		noexcept(std::declval<StorageType&>().get(row, column)))
 	{
@@ -32,6 +36,42 @@ public:
 	}
 
 };
+
+namespace detail {
+
+template <class StorageType>
+Matrix<StorageType> zeroMatrix() {
+	auto zero = Matrix<StorageType>();
+	for (auto rowIdx = 0u; rowIdx < StorageType::ROWS; ++rowIdx) {
+		for (auto columnIdx = 0u; columnIdx < StorageType::COLUMNS; ++columnIdx) {
+			zero.set(rowIdx, columnIdx, StorageType::ScalarTraits::ZERO);
+		}
+	}
+	return zero;
+}
+
+template <class StorageType>
+Matrix<StorageType> identityMatrix() {
+	auto zero = Matrix<StorageType>();
+	for (auto rowIdx = 0u; rowIdx < StorageType::ROWS; ++rowIdx) {
+		for (auto columnIdx = 0u; columnIdx < StorageType::COLUMNS; ++columnIdx) {
+			if (rowIdx == columnIdx) {
+				zero.set(rowIdx, columnIdx, StorageType::ScalarTraits::ONE);
+			} else {
+				zero.set(rowIdx, columnIdx, StorageType::ScalarTraits::ZERO);
+			}
+		}
+	}
+	return zero;
+}
+
+} // namespace detail
+
+template <class StorageType>
+Matrix<StorageType> Matrix<StorageType>::ZERO = detail::zeroMatrix<StorageType>();
+
+template <class StorageType>
+Matrix<StorageType> Matrix<StorageType>::IDENTITY = detail::identityMatrix<StorageType>();
 
 template <class LHSStorageType, class RHSStorageType>
 inline auto operator*(
