@@ -75,6 +75,39 @@ template <class StorageType>
 Matrix<StorageType> Matrix<StorageType>::IDENTITY = detail::identityMatrix<StorageType>();
 
 template <class LHSStorageType, class RHSStorageType>
+inline bool operator==(
+	const Matrix<LHSStorageType>& lhs,
+	const Matrix<RHSStorageType>& rhs
+	) noexcept(noexcept(lhs.get(0, 0)) && noexcept(rhs.get(0, 0)))
+{
+	static_assert(
+		LHSStorageType::COLUMNS == RHSStorageType::COLUMNS &&
+		LHSStorageType::ROWS == RHSStorageType::ROWS,
+		"Incompatible matrix sizes for equality test"
+		);
+
+	for (auto rowIdx = 0u; rowIdx < LHSStorageType::ROWS; ++rowIdx) {
+		for (auto columnIdx = 0u; columnIdx < LHSStorageType::COLUMNS; ++columnIdx) {
+			using ScalarTraits = typename LHSStorageType::ScalarTraits;
+			if (!ScalarTraits::equal(lhs.get(rowIdx, columnIdx), rhs.get(rowIdx, columnIdx))) {
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+template <class LHSStorageType, class RHSStorageType>
+inline bool operator!=(
+	const Matrix<LHSStorageType>& lhs,
+	const Matrix<RHSStorageType>& rhs
+	) noexcept(noexcept(lhs == rhs))
+{
+	return !(lhs == rhs);
+}
+
+template <class LHSStorageType, class RHSStorageType>
 inline auto operator*(
 	const Matrix<LHSStorageType>& lhs,
 	const Matrix<RHSStorageType>& rhs
@@ -104,7 +137,7 @@ template <class LHSStorageType, class RHSStorageType>
 inline auto& operator*=(
 	Matrix<LHSStorageType>& lhs,
 	const Matrix<RHSStorageType>& rhs
-	) noexcept(noexcept(lhs.get(0, 0)) && noexcept(rhs.get(0, 0)))
+	) noexcept(noexcept(lhs * rhs))
 {
 	lhs = lhs * rhs;
 	return lhs;

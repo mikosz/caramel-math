@@ -109,6 +109,19 @@ TEST_F(MatrixTest, ZeroMatrixHasZeroesEverywhere) {
 	EXPECT_EQ(zero.get(2, 1), 0);
 }
 
+TEST_F(MatrixTest, IdentityMatrixHasOnesOnDiagonal) {
+	using Matrix = Matrix<ArrayStorage<BasicScalarTraits<int>, 3, 2, AssertErrorHandler>>;
+
+	const auto zero = Matrix::IDENTITY;
+
+	EXPECT_EQ(zero.get(0, 0), 1);
+	EXPECT_EQ(zero.get(0, 1), 0);
+	EXPECT_EQ(zero.get(1, 0), 0);
+	EXPECT_EQ(zero.get(1, 1), 1);
+	EXPECT_EQ(zero.get(2, 0), 0);
+	EXPECT_EQ(zero.get(2, 1), 0);
+}
+
 TEST_F(MatrixTest, GetCallsStorageGet) {
 	auto matrix = Matrix<MockStorageProxy>();
 
@@ -291,6 +304,32 @@ TEST_F(MatrixTest, MultiplicationIsPotentiallyThrowingIfStorageIsPotentiallyThro
 	using Matrix = Matrix<PotentiallyThrowingStorage<12, 12>>;
 	static_assert(!noexcept(std::declval<Matrix>() * std::declval<Matrix>()));
 	static_assert(!noexcept(std::declval<Matrix&>() *= std::declval<Matrix>()));
+}
+
+TEST_F(MatrixTest, MatricesAreEqualityComparable) {
+	using Matrix = Matrix<ArrayStorage<BasicScalarTraits<int>, 2, 3, ThrowingErrorHandler>>;
+	auto matrix = Matrix(0, 1, 2, 3, 4, 5);
+	auto equal = matrix;
+	auto unequal = matrix;
+	unequal.set(1, 2, 42);
+
+	EXPECT_TRUE(matrix == equal);
+	EXPECT_FALSE(matrix == unequal);
+
+	EXPECT_TRUE(matrix != unequal);
+	EXPECT_FALSE(matrix != equal);
+}
+
+TEST_F(MatrixTest, EqualityComparisonIsNoexceptIfStorageIsNoexcept) {
+	using Matrix = Matrix<NoexceptStorage<12, 12>>;
+	static_assert(noexcept(std::declval<Matrix>() == std::declval<Matrix>()));
+	static_assert(noexcept(std::declval<Matrix&>() != std::declval<Matrix>()));
+}
+
+TEST_F(MatrixTest, EqualityComparisonIsPotentiallyThrowingIfStorageIsPotentiallyThrowing) {
+	using Matrix = Matrix<PotentiallyThrowingStorage<12, 12>>;
+	static_assert(!noexcept(std::declval<Matrix>() == std::declval<Matrix>()));
+	static_assert(!noexcept(std::declval<Matrix&>() != std::declval<Matrix>()));
 }
 
 } // anonymous namespace
