@@ -14,11 +14,11 @@ namespace /* anonymous */ {
 class ArrayStorageTest : public MockErrorHandlerFixtureTest {
 };
 
-TEST_F(ArrayStorageTest, ArrayStorageIsDefaultConstructible) {
+TEST_F(ArrayStorageTest, IsDefaultConstructible) {
 	auto storage = ArrayStorage<BasicScalarTraits<int>, 1, 2, MockErrorHandlerProxy>();
 }
 
-TEST_F(ArrayStorageTest, ArrayStorageIsConstructibleWithListOfValues) {
+TEST_F(ArrayStorageTest, IsConstructibleWithListOfValues) {
 	using Storage = ArrayStorage<BasicScalarTraits<int>, 2, 3, MockErrorHandlerProxy>;
 	auto storage = Storage(
 		0, 1, 2,

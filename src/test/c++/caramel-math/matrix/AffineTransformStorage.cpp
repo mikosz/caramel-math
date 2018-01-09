@@ -14,6 +14,32 @@ namespace /* anonymous */ {
 class AffineTransformStorageTest : public MockErrorHandlerFixtureTest {
 };
 
+TEST_F(AffineTransformStorageTest, IsDefaultConstructible) {
+	auto storage = AffineTransformStorage<BasicScalarTraits<int>, MockErrorHandlerProxy>();
+}
+
+TEST_F(AffineTransformStorageTest, IsConstructibleWithListOfValues) {
+	using Storage = AffineTransformStorage<BasicScalarTraits<int>, MockErrorHandlerProxy>;
+	auto storage = Storage(
+		0, 1, 2, 3,
+		4, 5, 6, 7,
+		8, 9, 10, 11
+		);
+
+	EXPECT_EQ(storage.get(0, 0), 0);
+	EXPECT_EQ(storage.get(0, 1), 1);
+	EXPECT_EQ(storage.get(0, 2), 2);
+	EXPECT_EQ(storage.get(0, 3), 3);
+	EXPECT_EQ(storage.get(1, 0), 4);
+	EXPECT_EQ(storage.get(1, 1), 5);
+	EXPECT_EQ(storage.get(1, 2), 6);
+	EXPECT_EQ(storage.get(1, 3), 7);
+	EXPECT_EQ(storage.get(2, 0), 8);
+	EXPECT_EQ(storage.get(2, 1), 9);
+	EXPECT_EQ(storage.get(2, 2), 10);
+	EXPECT_EQ(storage.get(2, 3), 11);
+}
+
 TEST_F(AffineTransformStorageTest, GetAndSetReturnAndUpdateStoredValue) {
 	auto storage = AffineTransformStorage<BasicScalarTraits<int>, MockErrorHandlerProxy>();
 

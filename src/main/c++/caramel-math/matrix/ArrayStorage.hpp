@@ -28,14 +28,14 @@ public:
 
 	using GetReturnType = std::conditional_t<
 		std::is_arithmetic_v<Scalar>,
-		std::add_const_t<Scalar>, 
+		std::add_const_t<Scalar>,
 		std::add_const_t<Scalar&>
 		>;
 
 	ArrayStorage() = default;
 
 	template <class... CompatibleValues>
-	constexpr explicit ArrayStorage(CompatibleValues&&... values) noexcept :
+	explicit ArrayStorage(CompatibleValues&&... values) noexcept :
 		data_{ std::forward<CompatibleValues>(values)... }
 	{
 		static_assert(sizeof...(values) == ROWS * COLUMNS);

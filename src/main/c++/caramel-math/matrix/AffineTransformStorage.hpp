@@ -30,6 +30,39 @@ public:
 		std::add_const_t<Scalar&>
 		>;
 
+	AffineTransformStorage() = default;
+
+	explicit AffineTransformStorage(
+		Scalar s00,
+		Scalar s01,
+		Scalar s02,
+		Scalar s03,
+		Scalar s10,
+		Scalar s11,
+		Scalar s12,
+		Scalar s13,
+		Scalar s20,
+		Scalar s21,
+		Scalar s22,
+		Scalar s23
+		) noexcept :
+		data_{
+			std::move(s00),
+			std::move(s01),
+			std::move(s02),
+			std::move(s03),
+			std::move(s10),
+			std::move(s11),
+			std::move(s12),
+			std::move(s13),
+			std::move(s20),
+			std::move(s21),
+			std::move(s22),
+			std::move(s23)
+		}
+	{
+	}
+
 	GetReturnType get(size_t row, size_t column) const noexcept(
 		noexcept(ErrorHandler::invalidAccess<GetReturnType>(row, column)))
 	{
