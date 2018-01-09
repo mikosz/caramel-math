@@ -98,6 +98,7 @@ class MatrixTest : public MatrixStorageFixture {
 
 TEST_F(MatrixTest, ZeroMatrixHasZeroesEverywhere) {
 	using Matrix = Matrix<ArrayStorage<BasicScalarTraits<int>, 3, 2, AssertErrorHandler>>;
+
 	const auto zero = Matrix::ZERO;
 
 	EXPECT_EQ(zero.get(0, 0), 0);

@@ -11,8 +11,6 @@ public:
 
 	using Storage = StorageType;
 
-	using StorageType::StorageType;
-
 	using typename StorageType::Scalar;
 
 	using StorageType::ROWS;
@@ -22,6 +20,9 @@ public:
 	static Matrix ZERO;
 
 	static Matrix IDENTITY;
+
+	// Inherit constructors
+	using StorageType::StorageType;
 
 	decltype(auto) get(size_t row, size_t column) const noexcept(
 		noexcept(std::declval<StorageType&>().get(row, column)))

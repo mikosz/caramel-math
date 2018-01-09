@@ -32,11 +32,11 @@ public:
 		std::add_const_t<Scalar&>
 		>;
 
-	ArrayStorage() noexcept = default;
+	ArrayStorage() = default;
 
-	template <class... CompatibleScalars>
-	ArrayStorage(CompatibleScalars&&... values) noexcept :
-		data_{ std::move(values)... }
+	template <class... CompatibleValues>
+	constexpr explicit ArrayStorage(CompatibleValues&&... values) noexcept :
+		data_{ std::forward<CompatibleValues>(values)... }
 	{
 		static_assert(sizeof...(values) == ROWS * COLUMNS);
 	}

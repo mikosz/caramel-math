@@ -33,6 +33,22 @@ TEST_F(ArrayStorageTest, ArrayStorageIsConstructibleWithListOfValues) {
 	EXPECT_EQ(storage.get(1, 2), 5);
 }
 
+TEST_F(ArrayStorageTest, ArrayStorageIsCopyable) {
+	using Storage = ArrayStorage<BasicScalarTraits<int>, 2, 3, MockErrorHandlerProxy>;
+	auto storage = Storage(
+		0, 1, 2,
+		3, 4, 5
+		);
+	const auto copy = storage;
+
+	EXPECT_EQ(copy.get(0, 0), 0);
+	EXPECT_EQ(copy.get(0, 1), 1);
+	EXPECT_EQ(copy.get(0, 2), 2);
+	EXPECT_EQ(copy.get(1, 0), 3);
+	EXPECT_EQ(copy.get(1, 1), 4);
+	EXPECT_EQ(copy.get(1, 2), 5);
+}
+
 TEST_F(ArrayStorageTest, GetAndSetReturnAndUpdateStoredValue) {
 	auto storage = ArrayStorage<BasicScalarTraits<int>, 1, 2, MockErrorHandlerProxy>();
 	storage.set(0, 0, 42);
