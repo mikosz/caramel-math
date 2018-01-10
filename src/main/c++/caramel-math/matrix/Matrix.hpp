@@ -143,6 +143,68 @@ inline auto& operator*=(
 	return lhs;
 }
 
+template <class StorageType>
+inline Matrix<StorageType>& operator*=(Matrix<StorageType>& matrix, typename StorageType::Scalar scalar) noexcept(
+	noexcept(matrix.get(0, 0)))
+{
+	for (auto rowIdx = 0u; rowIdx < StorageType::ROWS; ++rowIdx) {
+		for (auto columnIdx = 0u; columnIdx < StorageType::COLUMNS; ++columnIdx) {
+			matrix.set(rowIdx, columnIdx, matrix.get(rowIdx, columnIdx) * scalar);
+		}
+	}
+
+	return matrix;
+}
+
+template <class StorageType>
+inline Matrix<StorageType> operator*(const Matrix<StorageType>& matrix, typename StorageType::Scalar scalar)
+	noexcept(noexcept(std::declval<Matrix<StorageType>&>() *= scalar))
+{
+	auto result = matrix;
+	result *= scalar;
+	return result;
+}
+
+template <class StorageType>
+inline Matrix<StorageType> operator*(typename StorageType::Scalar scalar, const Matrix<StorageType>& matrix)
+	noexcept(noexcept(std::declval<Matrix<StorageType>&>() *= scalar))
+{
+	auto result = matrix;
+	result *= scalar;
+	return result;
+}
+
+template <class StorageType>
+inline Matrix<StorageType>& operator/=(Matrix<StorageType>& matrix, typename StorageType::Scalar scalar) noexcept(
+	noexcept(matrix.get(0, 0)))
+{
+	for (auto rowIdx = 0u; rowIdx < StorageType::ROWS; ++rowIdx) {
+		for (auto columnIdx = 0u; columnIdx < StorageType::COLUMNS; ++columnIdx) {
+			matrix.set(rowIdx, columnIdx, matrix.get(rowIdx, columnIdx) / scalar);
+		}
+	}
+
+	return matrix;
+}
+
+template <class StorageType>
+inline Matrix<StorageType> operator/(const Matrix<StorageType>& matrix, typename StorageType::Scalar scalar)
+	noexcept(noexcept(std::declval<Matrix<StorageType>&>() /= scalar))
+{
+	auto result = matrix;
+	result /= scalar;
+	return result;
+}
+
+template <class StorageType>
+inline Matrix<StorageType> operator/(typename StorageType::Scalar scalar, const Matrix<StorageType>& matrix)
+	noexcept(noexcept(std::declval<Matrix<StorageType>&>() /= scalar))
+{
+	auto result = matrix;
+	result /= scalar;
+	return result;
+}
+
 } // namespace caramel_math::matrix
 
 #endif /* CARAMELMATH_MATRIX_MATRIX_HPP__ */

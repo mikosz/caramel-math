@@ -332,4 +332,44 @@ TEST_F(MatrixTest, EqualityComparisonIsPotentiallyThrowingIfStorageIsPotentially
 	static_assert(!noexcept(std::declval<Matrix&>() != std::declval<Matrix>()));
 }
 
+TEST_F(MatrixTest, MatricesAreScalarMultiplicative) {
+	using Matrix = Matrix<ArrayStorage<BasicScalarTraits<int>, 2, 3, ThrowingErrorHandler>>;
+	const auto matrix = Matrix(0, 1, 2, 3, 4, 5);
+	const auto twoTimesMatrix = Matrix(0, 2, 4, 6, 8, 10);
+
+	EXPECT_EQ(matrix * 2, twoTimesMatrix);
+	EXPECT_EQ(2 * matrix, twoTimesMatrix);
+	
+	auto multiplicationCopy = matrix;
+	multiplicationCopy *= 2;
+	EXPECT_EQ(multiplicationCopy, twoTimesMatrix);
+
+	EXPECT_EQ(twoTimesMatrix / 2, matrix);
+	EXPECT_EQ(2 / twoTimesMatrix, matrix);
+
+	auto divisionCopy = twoTimesMatrix;
+	divisionCopy /= 2;
+	EXPECT_EQ(divisionCopy, matrix);
+}
+
+TEST_F(MatrixTest, MatrixMultiplicationByScalarIsNoexceptIfStorageIsNoexcept) {
+	using Matrix = Matrix<NoexceptStorage<12, 12>>;
+	static_assert(noexcept(std::declval<Matrix>() * 0.0f));
+	static_assert(noexcept(0.0f * std::declval<Matrix>()));
+	static_assert(noexcept(std::declval<Matrix&>() *= 0.0f));
+	static_assert(noexcept(std::declval<Matrix>() / 0.0f));
+	static_assert(noexcept(0.0f / std::declval<Matrix>()));
+	static_assert(noexcept(std::declval<Matrix&>() /= 0.0f));
+}
+
+TEST_F(MatrixTest, MatrixMultiplicationByScalarIsPotentiallyThrowingIfStorageIsPotentiallyThrowing) {
+	using Matrix = Matrix<PotentiallyThrowingStorage<12, 12>>;
+	static_assert(!noexcept(std::declval<Matrix>() * 0.0f));
+	static_assert(!noexcept(0.0f * std::declval<Matrix>()));
+	static_assert(!noexcept(std::declval<Matrix&>() *= 0.0f));
+	static_assert(!noexcept(std::declval<Matrix>() / 0.0f));
+	static_assert(!noexcept(0.0f / std::declval<Matrix>()));
+	static_assert(!noexcept(std::declval<Matrix&>() /= 0.0f));
+}
+
 } // anonymous namespace
