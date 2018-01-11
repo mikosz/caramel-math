@@ -12,6 +12,10 @@ public:
 
 	Float4() = default;
 
+	explicit Float4(float f) noexcept {
+		data_ = detail::replicate(f);
+	}
+
 	explicit Float4(const std::array<float, 4>& xyzw) noexcept {
 		data_ = detail::load(xyzw.data());
 	}

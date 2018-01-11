@@ -7,13 +7,25 @@ using namespace caramel_math::simd;
 namespace /* anonymous */ {
 
 TEST(Float4Test, InitialisationAndReadAccessWorks) {
-	auto f4 = Float4({ 0.0f, 1.0f, 2.0f, 3.0f });
-	const auto xyzw = f4.xyzw();
+	{
+		auto f4 = Float4({ 0.0f, 1.0f, 2.0f, 3.0f });
+		const auto xyzw = f4.xyzw();
 
-	EXPECT_FLOAT_EQ(xyzw[0], 0.0f);
-	EXPECT_FLOAT_EQ(xyzw[1], 1.0f);
-	EXPECT_FLOAT_EQ(xyzw[2], 2.0f);
-	EXPECT_FLOAT_EQ(xyzw[3], 3.0f);
+		EXPECT_FLOAT_EQ(xyzw[0], 0.0f);
+		EXPECT_FLOAT_EQ(xyzw[1], 1.0f);
+		EXPECT_FLOAT_EQ(xyzw[2], 2.0f);
+		EXPECT_FLOAT_EQ(xyzw[3], 3.0f);
+	}
+
+	{
+		auto f4 = Float4(42.0f);
+		const auto xyzw = f4.xyzw();
+
+		EXPECT_FLOAT_EQ(xyzw[0], 42.0f);
+		EXPECT_FLOAT_EQ(xyzw[1], 42.0f);
+		EXPECT_FLOAT_EQ(xyzw[2], 42.0f);
+		EXPECT_FLOAT_EQ(xyzw[3], 42.0f);
+	}
 }
 
 TEST(Float4Test, Assignment) {

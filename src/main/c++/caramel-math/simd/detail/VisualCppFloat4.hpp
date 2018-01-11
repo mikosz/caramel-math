@@ -9,11 +9,15 @@ namespace caramel_math::simd::detail {
 
 using Float4 = __m128;
 
-inline Float4 load(const float* xyzw) {
+inline Float4 load(const float* xyzw) noexcept {
 	return _mm_load_ps(xyzw);
 }
 
-inline void store(float* xyzw, Float4 data) {
+inline Float4 replicate(float value) noexcept {
+	return _mm_load_ps1(&value);
+}
+
+inline void store(float* xyzw, Float4 data) noexcept {
 	_mm_store_ps(xyzw, data);
 }
 

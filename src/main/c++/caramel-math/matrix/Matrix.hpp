@@ -2,6 +2,7 @@
 #define CARAMELMATH_MATRIX_MATRIX_HPP__
 
 #include "storage-traits.hpp"
+#include "matrixfwd.hpp"
 
 namespace caramel_math::matrix {
 
@@ -34,6 +35,10 @@ public:
 		noexcept(std::declval<StorageType&>().set(row, column, scalar)))
 	{
 		return this->StorageType::set(row, column, std::move(scalar));
+	}
+
+	StorageType& data() noexcept {
+		return static_cast<StorageType&>(*this);
 	}
 
 };
