@@ -12,8 +12,8 @@ public:
 
 	Float4() = default;
 
-	Float4(float xyzw[4]) noexcept {
-		detail::load(data_, xyzw);
+	explicit Float4(const std::array<float, 4>& xyzw) noexcept {
+		data_ = detail::load(xyzw.data());
 	}
 
 	std::array<float, 4> xyzw() const noexcept {
@@ -24,12 +24,45 @@ public:
 
 	friend Float4 operator+(const Float4& lhs, const Float4& rhs) noexcept {
 		auto result = Float4();
-		result.data_ = detail::add(lhs, rhs);
+		result.data_ = detail::add(lhs.data_, rhs.data_);
 		return result;
 	}
 
 	Float4& operator+=(const Float4& other) noexcept {
 		data_ = (*this + other).data_;
+		return *this;
+	}
+
+	friend Float4 operator-(const Float4& lhs, const Float4& rhs) noexcept {
+		auto result = Float4();
+		result.data_ = detail::subtract(lhs.data_, rhs.data_);
+		return result;
+	}
+
+	Float4& operator-=(const Float4& other) noexcept {
+		data_ = (*this - other).data_;
+		return *this;
+	}
+
+	friend Float4 operator*(const Float4& lhs, const Float4& rhs) noexcept {
+		auto result = Float4();
+		result.data_ = detail::multiply(lhs.data_, rhs.data_);
+		return result;
+	}
+
+	Float4& operator*=(const Float4& other) noexcept {
+		data_ = (*this * other).data_;
+		return *this;
+	}
+
+	friend Float4 operator/(const Float4& lhs, const Float4& rhs) noexcept {
+		auto result = Float4();
+		result.data_ = detail::divide(lhs.data_, rhs.data_);
+		return result;
+	}
+
+	Float4& operator/=(const Float4& other) noexcept {
+		data_ = (*this / other).data_;
 		return *this;
 	}
 
