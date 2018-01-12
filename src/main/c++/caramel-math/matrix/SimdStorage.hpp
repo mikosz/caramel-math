@@ -60,22 +60,23 @@ public:
 	}
 
 	simd::Float4 get(size_t column) const noexcept(
-		noexcept(ErrorHandler::invalidAccess<float>(0, column))) // TODO
+		noexcept(ErrorHandler::invalidAccess<simd::Float4>(0, column))) // TODO
 	{
 		if constexpr (RUNTIME_CHECKS) {
 			if (column >= COLUMNS) {
-				return ErrorHandler::invalidAccess<float>(0, column); // TODO
+				return ErrorHandler::invalidAccess<simd::Float4>(0, column); // TODO
 			}
 		}
 		return columns_[column];
 	}
 
 	void set(size_t column, simd::Float4 value) noexcept(
-		noexcept(ErrorHandler::invalidAccess<float>(0, column))) // TODO
+		noexcept(ErrorHandler::invalidAccess<simd::Float4>(0, column))) // TODO
 	{
 		if constexpr (RUNTIME_CHECKS) {
 			if (column >= COLUMNS) {
-				return ErrorHandler::invalidAccess<float>(0, column); // TODO
+				ErrorHandler::invalidAccess<simd::Float4>(0, column); // TODO
+				return;
 			}
 		}
 		columns_[column] = std::move(value);
@@ -111,10 +112,19 @@ inline auto operator*(
 	const Matrix<SimdStorage<RHSScalarTraitsType, RHSErrorHandlerType>>& rhs
 	) noexcept(noexcept(lhs.get(0, 0)) && noexcept(rhs.get(0, 0))) // TODO
 {
+	static_assert(SimdStorage<LHSScalarTraitsType, LHSErrorHandlerType>::COLUMNS == 4);
+
 	auto result = Matrix<SimdStorage<LHSScalarTraitsType, LHSErrorHandlerType>>();
 
 	for (auto columnIdx = 0u; columnIdx < 4; ++columnIdx) {
-		lhs.data().get(columnIdx) * rhs.data().get(columnIdx);
+		const auto rhsColumnXyzw = rhs.data().get(columnIdx).xyzw();
+
+		auto column = lhs.data().get(0) * simd::Float4(rhsColumnXyzw[0]);
+		column += lhs.data().get(1) * simd::Float4(rhsColumnXyzw[1]);
+		column += lhs.data().get(2) * simd::Float4(rhsColumnXyzw[2]);
+		column += lhs.data().get(3) * simd::Float4(rhsColumnXyzw[3]);
+
+		result.data().set(columnIdx, column);
 	}
 
 	return result;

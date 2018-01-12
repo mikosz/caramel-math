@@ -41,6 +41,10 @@ public:
 		return static_cast<StorageType&>(*this);
 	}
 
+	const StorageType& data() const noexcept {
+		return const_cast<Matrix&>(*this).data();
+	}
+
 };
 
 namespace detail {
