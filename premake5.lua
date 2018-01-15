@@ -2,6 +2,7 @@ structure = require "structure"
 
 include "premake5.cfg.lua"
 include "googletest.lua"
+include "googlebenchmark.lua"
 
 ROOT_DIR = path.getabsolute(".")
 
@@ -53,11 +54,20 @@ workspace "caramel-math"
 	filter "action:vs*"
 		defines { "_SCL_SECURE_NO_WARNINGS" }
 		buildoptions { "/std:c++latest" }
-		defines { "GTEST_LANG_CXX11=1" } -- otherwise googletest fails to compile with c++latest
+		defines { "GTEST_LANG_CXX11=1" }
 	filter {}
 
-	structure.library_project("caramel-math", function()
+	structure.header_project("caramel-math", "src")
+	
+	structure.executable_project("caramel-math-test", "test", function()
 			add_googletest_files()
+		end
+		)
+
+	structure.executable_project("caramel-math-benchmark", "benchmark", false, function()
+			includedirs(googlebenchmark_include_dir())
+			add_googlebenchmark_libdir()
+			link_googlebenchmark_lib()
 		end
 		)
 

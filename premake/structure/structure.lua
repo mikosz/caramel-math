@@ -15,12 +15,8 @@ end
 
 -- header_project and library_project
 
-local source_dir = function(source_dir_name)
-	return "src/"..source_dir_name.."/c++/"
-end
-
-local source_patterns = function(source_dir_name)
-	return { source_dir(source_dir_name).."**.hpp", source_dir(source_dir_name).."**.cpp" }
+local source_patterns = function(src_dir)
+	return { src_dir.."/**.hpp", src_dir.."/**.cpp" }
 end
 
 local create_source_vpaths = function(patterns, source_directory)
@@ -35,124 +31,37 @@ local create_source_vpaths = function(patterns, source_directory)
 	end
 end
 
-local add_sources = function(source_dir_name)
-	local patterns = source_patterns(source_dir_name)
-	create_source_vpaths(patterns, source_dir(source_dir_name))
+local add_sources = function(src_dir)
+	local patterns = source_patterns(src_dir)
+	create_source_vpaths(patterns, src_dir..'/')
 	files(patterns)
 end
 
-local create_resource_vpaths = function(pattern, resource_directory)
-	for _, file in pairs(os.matchfiles(pattern)) do
-		local file_with_parents = file:sub(string.len(resource_directory) + 1)
-		local parent_path = path.getdirectory(file_with_parents)
-		vpaths { [ path.join(".resources", parent_path) ] = file }
-	end
-end
-
-local add_copy_resources_job = function(resource_directory, resource_path)
-	filter("files:"..resource_path)
-		local file_with_parents = resource_path:sub(string.len(resource_directory) + 1)
-		local parent_path = path.getdirectory(file_with_parents)
-
-		local source = "%{file.relpath}"
-		local target = path.join("%{prj.location}", parent_path, "%{file.name}")
-		
-		buildmessage("copying "..source.." -> "..target)
-		
-		buildcommands {
-			"{COPY} "..source.." "..target
-		}
-		
-		buildoutputs { target }
-	filter {}
-end
-
-local add_resources = function(source_dir_name)
-	resource_directory = "src/"..source_dir_name.."/resources/"
-	pattern = resource_directory.."**"
-	create_resource_vpaths(pattern, resource_directory)
-	files(pattern)
-	
-	for _, file in pairs(os.matchfiles(pattern)) do
-		add_copy_resources_job(resource_directory, file)
-	end
-end
-
-local create_source_project = function(name, source_dir_name)
+local create_source_project = function(name, src_dir)
 	project(name)
-		add_sources(source_dir_name)
-		add_resources(source_dir_name)
+		add_sources(src_dir)
 		
 		table.insert(all_projects, name)
 end
 
-local create_test_projects = function(name, is_library, common_settings)
-	if not table.isempty(os.matchfiles(source_dir("test").."**.cpp")) then
-		create_source_project(name.."-unit-test", "test")
-			kind "ConsoleApp"
-			targetdir(target_dir_path("tests"))
-			includedirs { source_dir("main") }
-			if is_library then
-				links(name)
-			end
-			if common_settings then
-				common_settings()
-			end
-		project "*"
-		
-		table.insert(test_projects, name.."-unit-test")
-	end
-
-	if not table.isempty(os.matchfiles(source_dir("functional-test").."**.cpp")) then
-		create_source_project(name.."-functional-test", "functional-test")
-			kind "ConsoleApp"
-			targetdir(target_dir_path("tests"))
-			includedirs { source_dir("main") }
-			if is_library then
-				links(name)
-			end
-			if common_settings then
-				common_settings()
-			end
-		project "*"
-
-		table.insert(test_projects, name.."-functional-test")
-	end
-end
-
-local gather_headers = function()
-	for _, file in pairs(os.matchfiles(source_dir("main").."**.hpp")) do
+local gather_headers = function(src_dir)
+	for _, file in pairs(os.matchfiles(src_dir.."/**.hpp")) do
 		local source = path.getabsolute(file)
-		local target = file:gsub("src/main/c%+%+/", "")
+		local target = file:gsub(src_dir.."/", "")
 		headers[source] = target
 	end
 end
 
-local add_precompiled_header = function(name)
-	local pch_header_path = source_dir("main")..name..".pch.hpp"
-	local pch_source_path = source_dir("main")..name..".pch.cpp"
-
-	if os.isfile(pch_header_path) and os.isfile(pch_source_path) then
-		pchheader(path.getname(pch_header_path))
-		pchsource(pch_source_path)
-		
-		vpaths { [ ".pch" ] = pch_header_path }
-		vpaths { [ ".pch" ] = pch_source_path }
-	end
-end
-
-local create_main_project = function(name)
-
-	create_source_project(name, "main")
-		add_precompiled_header(name)
+local create_main_project = function(name, src_dir)
+	create_source_project(name, src_dir)
 	project "*"
 		
-	includedirs(source_dir("main"))
-	gather_headers()
+	includedirs(src_dir)
+	gather_headers(src_dir)
 end
 
-function m.header_project(name, common_settings)
-	create_main_project(name)
+function m.header_project(name, src_dir, common_settings)
+	create_main_project(name, src_dir)
 
 	project(name)
 		kind "Utility"
@@ -161,12 +70,10 @@ function m.header_project(name, common_settings)
 			common_settings()
 		end
 	project "*"
-	
-	create_test_projects(name, false, common_settings)
 end
 
-function m.library_project(name, common_settings)
-	create_main_project(name)
+function m.library_project(name, src_dir, common_settings)
+	create_main_project(name, src_dir)
 
 	project(name)
 		kind "StaticLib"
@@ -193,8 +100,8 @@ function m.library_project(name, common_settings)
 	create_test_projects(name, true, common_settings)
 end
 
-function m.executable_project(name, is_windowed, common_settings)
-	create_main_project(name)
+function m.executable_project(name, src_dir, is_windowed, common_settings)
+	create_main_project(name, src_dir)
 
 	project(name)
 		if is_windowed then
