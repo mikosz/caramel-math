@@ -3,7 +3,7 @@
 
 namespace caramel_math {
 
-#ifdef _NDEBUG
+#ifdef NDEBUG
 constexpr auto IS_DEBUG = false;
 #else
 constexpr auto IS_DEBUG = true;

@@ -25,25 +25,9 @@ public:
 	// Inherit constructors
 	using StorageType::StorageType;
 
-	decltype(auto) get(size_t row, size_t column) const noexcept(
-		noexcept(std::declval<StorageType&>().get(row, column)))
-	{
-		return this->StorageType::get(row, column);
-	}
+	using StorageType::get;
 
-	void set(size_t row, size_t column, Scalar scalar) noexcept(
-		noexcept(std::declval<StorageType&>().set(row, column, scalar)))
-	{
-		return this->StorageType::set(row, column, std::move(scalar));
-	}
-
-	StorageType& data() noexcept {
-		return static_cast<StorageType&>(*this);
-	}
-
-	const StorageType& data() const noexcept {
-		return const_cast<Matrix&>(*this).data();
-	}
+	using StorageType::set;
 
 };
 

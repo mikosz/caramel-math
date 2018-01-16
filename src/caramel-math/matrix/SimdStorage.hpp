@@ -56,7 +56,7 @@ public:
 		}
 		auto xyzw = columns_[column].xyzw();
 		xyzw[row] = std::move(scalar);
-		columns_[column] = Float4(xyzw);
+		columns_[column] = simd::Float4(xyzw);
 	}
 
 	simd::Float4 get(size_t column) const noexcept(
@@ -117,14 +117,14 @@ inline auto operator*(
 	auto result = Matrix<SimdStorage<LHSScalarTraitsType, LHSErrorHandlerType>>();
 
 	for (auto columnIdx = 0u; columnIdx < 4; ++columnIdx) {
-		const auto rhsColumnXyzw = rhs.data().get(columnIdx).xyzw();
+		const auto rhsColumnXyzw = rhs.get(columnIdx).xyzw();
 
-		auto column = lhs.data().get(0) * simd::Float4(rhsColumnXyzw[0]);
-		column += lhs.data().get(1) * simd::Float4(rhsColumnXyzw[1]);
-		column += lhs.data().get(2) * simd::Float4(rhsColumnXyzw[2]);
-		column += lhs.data().get(3) * simd::Float4(rhsColumnXyzw[3]);
+		auto column = lhs.get(0) * simd::Float4(rhsColumnXyzw[0]);
+		column += lhs.get(1) * simd::Float4(rhsColumnXyzw[1]);
+		column += lhs.get(2) * simd::Float4(rhsColumnXyzw[2]);
+		column += lhs.get(3) * simd::Float4(rhsColumnXyzw[3]);
 
-		result.data().set(columnIdx, column);
+		result.set(columnIdx, column);
 	}
 
 	return result;

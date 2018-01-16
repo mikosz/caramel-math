@@ -40,12 +40,12 @@ struct MockErrorHandlerProxy {
 
 	template <class ReturnType>
 	static ReturnType invalidAccess(size_t row, size_t column) noexcept {
-		return MockErrorHandler::instance->invalidAccess(row, column);
+		return static_cast<ReturnType>(MockErrorHandler::instance->invalidAccess(row, column));
 	}
 
 	template <class ScalarType>
 	static void invalidValue(size_t row, size_t column, ScalarType got, ScalarType expected) noexcept {
-		MockErrorHandler::instance->invalidValue(row, column, got, expected);
+		MockErrorHandler::instance->invalidValue(row, column, static_cast<int>(got), static_cast<int>(expected));
 	}
 
 };
