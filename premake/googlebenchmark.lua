@@ -5,16 +5,23 @@ end
 
 function add_googlebenchmark_libdir()
 	local benchmark_dir = path.join(_MAIN_SCRIPT_DIR, "external/benchmark")
-	local lib_dir = path.join(benchmark_dir, "build/src")
 	
-	filter "configurations:Debug*"
-		libdirs(path.join(lib_dir, "Debug"))
-	filter "configurations:Release*"
-		libdirs(path.join(lib_dir, "Release"))
+	filter { "action:vs*", "configurations:Debug*" }
+		libdirs(path.join(benchmark_dir, "vs/Debug/lib"))
+	filter { "action:vs*", "configurations:Release*" }
+		libdirs(path.join(benchmark_dir, "vs/Release/lib"))
 	filter {}
 end
 
 function link_googlebenchmark_lib()
 	links "benchmark"
-	links "Shlwapi" -- TODO: only on Windows
+	filter "platforms:Win*"
+		links "Shlwapi"
+	filter {}
+end
+
+function use_googlebenchmark()
+	includedirs(googlebenchmark_include_dir())
+	add_googlebenchmark_libdir()
+	link_googlebenchmark_lib()
 end

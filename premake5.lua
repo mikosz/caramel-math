@@ -59,15 +59,13 @@ workspace "caramel-math"
 
 	structure.header_project("caramel-math", "src")
 	
-	structure.executable_project("caramel-math-test", "test", function()
-			add_googletest_files()
+	structure.executable_project("caramel-math-test", "test", false, function()
+			use_googletest()
 		end
 		)
 
 	structure.executable_project("caramel-math-benchmark", "benchmark", false, function()
-			includedirs(googlebenchmark_include_dir())
-			add_googlebenchmark_libdir()
-			link_googlebenchmark_lib()
+			use_googlebenchmark()
 		end
 		)
 
