@@ -3,6 +3,7 @@
 
 #include <array>
 
+#include "../detail/helper-type-traits.hpp"
 #include "../setup.hpp"
 
 namespace caramel_math::matrix {
@@ -34,7 +35,10 @@ public:
 
 	ArrayStorage() = default;
 
-	template <class... CompatibleValues>
+	template <
+		class... CompatibleValues,
+		typename = std::enable_if_t<caramel_math::detail::AllConvertibleV<Scalar, CompatibleValues...>>
+		>
 	explicit ArrayStorage(CompatibleValues&&... values) noexcept :
 		data_{ std::forward<CompatibleValues>(values)... }
 	{

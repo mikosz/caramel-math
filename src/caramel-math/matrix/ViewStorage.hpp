@@ -49,6 +49,14 @@ public:
 		return viewedMatrix_.set(modifiedRow, modifiedColumn, std::move(scalar));
 	}
 
+	ViewedMatrix& viewedMatrix() noexcept {
+		return viewedMatrix_;
+	}
+
+	const ViewedMatrix& viewedMatrix() const noexcept {
+		return viewedMatrix_;
+	}
+
 private:
 
 	ViewedMatrix& viewedMatrix_;

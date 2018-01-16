@@ -4,6 +4,7 @@
 #include "caramel-math/matrix/ThrowingErrorHandler.hpp"
 #include "caramel-math/matrix/SimdStorage.hpp"
 #include "caramel-math/matrix/Matrix.hpp"
+#include "caramel-math/matrix/matrix-ops.hpp"
 #include "caramel-math/ScalarTraits.hpp"
 #include "MockErrorHandler.hpp"
 

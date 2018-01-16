@@ -6,6 +6,7 @@
 #include "caramel-math/matrix/ArrayStorage.hpp"
 #include "caramel-math/matrix/SimdStorage.hpp"
 #include "caramel-math/matrix/Matrix.hpp"
+#include "caramel-math/matrix/matrix-ops.hpp"
 #include "caramel-math/ScalarTraits.hpp"
 
 using namespace caramel_math;

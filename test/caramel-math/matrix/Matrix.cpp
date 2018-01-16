@@ -2,6 +2,7 @@
 #include <gmock/gmock.h>
 
 #include "caramel-math/matrix/Matrix.hpp"
+#include "caramel-math/matrix/matrix-ops.hpp"
 #include "caramel-math/matrix/ArrayStorage.hpp"
 #include "caramel-math/matrix/AffineTransformStorage.hpp"
 #include "caramel-math/matrix/AssertErrorHandler.hpp"
@@ -95,6 +96,44 @@ private:
 
 class MatrixTest : public MatrixStorageFixture {
 };
+
+TEST_F(MatrixTest, MatricesAreCopyableAndCopyAssignable) {
+	auto source = Matrix<ArrayStorage<BasicScalarTraits<int>, 3, 2, AssertErrorHandler>>(
+		0, 1,
+		2, 3,
+		4, 5
+		);
+	auto target = source;
+
+	EXPECT_EQ(source, target);
+
+	source.set(0, 1, 42);
+
+	EXPECT_NE(source, target);
+
+	target = source;
+
+	EXPECT_EQ(source, target);
+}
+
+TEST_F(MatrixTest, MatricesAreConvertibleToCompatibleMatrices) {
+	auto source = Matrix<AffineTransformStorage<BasicScalarTraits<int>, AssertErrorHandler>>(
+		0, 1, 2, 3,
+		4, 5, 6, 7,
+		8, 9, 10, 10
+		);
+	auto target = Matrix<ArrayStorage<BasicScalarTraits<int>, 4, 4, AssertErrorHandler>>(source);
+
+	EXPECT_EQ(source, target);
+
+	source.set(0, 1, 42);
+
+	EXPECT_NE(source, target);
+
+	target = source;
+
+	EXPECT_EQ(source, target);
+}
 
 TEST_F(MatrixTest, ZeroMatrixHasZeroesEverywhere) {
 	using Matrix = Matrix<ArrayStorage<BasicScalarTraits<int>, 3, 2, AssertErrorHandler>>;
