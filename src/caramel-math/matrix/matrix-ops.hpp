@@ -7,17 +7,17 @@
 namespace caramel_math::matrix {
 
 template <class ResultType, class StorageType>
-inline ResultType transposed(const Matrix<StorageType>& matrix) {
+inline [[nodiscard]] ResultType transposed(const Matrix<StorageType>& matrix) {
 	return ResultType(viewTransposed(matrix));
 }
 
 template <class ResultType, class ViewedMatrixType>
-inline ResultType transposed(const Matrix<TransposedViewStorage<ViewedMatrixType>>& transposedMatrixView) {
+inline [[nodiscard]] ResultType transposed(const Matrix<TransposedViewStorage<ViewedMatrixType>>& transposedMatrixView) {
 	return matrix.viewedMatrix();
 }
 
 template <class LHSStorageType, class RHSStorageType>
-inline bool operator==(
+inline [[nodiscard]] bool operator==(
 	const Matrix<LHSStorageType>& lhs,
 	const Matrix<RHSStorageType>& rhs
 	) noexcept(noexcept(lhs.get(0, 0)) && noexcept(rhs.get(0, 0)))
@@ -41,7 +41,7 @@ inline bool operator==(
 }
 
 template <class LHSStorageType, class RHSStorageType>
-inline bool operator!=(
+inline [[nodiscard]] bool operator!=(
 	const Matrix<LHSStorageType>& lhs,
 	const Matrix<RHSStorageType>& rhs
 	) noexcept(noexcept(lhs == rhs))
@@ -50,7 +50,7 @@ inline bool operator!=(
 }
 
 template <class LHSStorageType, class RHSStorageType>
-inline auto operator*(
+inline [[nodiscard]] auto operator*(
 	const Matrix<LHSStorageType>& lhs,
 	const Matrix<RHSStorageType>& rhs
 	) noexcept(noexcept(lhs.get(0, 0)) && noexcept(rhs.get(0, 0)))
@@ -99,7 +99,7 @@ inline Matrix<StorageType>& operator*=(Matrix<StorageType>& matrix, typename Sto
 }
 
 template <class StorageType>
-inline Matrix<StorageType> operator*(const Matrix<StorageType>& matrix, typename StorageType::Scalar scalar)
+inline [[nodiscard]] Matrix<StorageType> operator*(const Matrix<StorageType>& matrix, typename StorageType::Scalar scalar)
 	noexcept(noexcept(std::declval<Matrix<StorageType>&>() *= scalar))
 {
 	auto result = matrix;
@@ -108,7 +108,7 @@ inline Matrix<StorageType> operator*(const Matrix<StorageType>& matrix, typename
 }
 
 template <class StorageType>
-inline Matrix<StorageType> operator*(typename StorageType::Scalar scalar, const Matrix<StorageType>& matrix)
+inline [[nodiscard]] Matrix<StorageType> operator*(typename StorageType::Scalar scalar, const Matrix<StorageType>& matrix)
 	noexcept(noexcept(std::declval<Matrix<StorageType>&>() *= scalar))
 {
 	auto result = matrix;
@@ -130,7 +130,7 @@ inline Matrix<StorageType>& operator/=(Matrix<StorageType>& matrix, typename Sto
 }
 
 template <class StorageType>
-inline Matrix<StorageType> operator/(const Matrix<StorageType>& matrix, typename StorageType::Scalar scalar)
+inline [[nodiscard]] Matrix<StorageType> operator/(const Matrix<StorageType>& matrix, typename StorageType::Scalar scalar)
 	noexcept(noexcept(std::declval<Matrix<StorageType>&>() /= scalar))
 {
 	auto result = matrix;
@@ -139,7 +139,7 @@ inline Matrix<StorageType> operator/(const Matrix<StorageType>& matrix, typename
 }
 
 template <class StorageType>
-inline Matrix<StorageType> operator/(typename StorageType::Scalar scalar, const Matrix<StorageType>& matrix)
+inline [[nodiscard]] Matrix<StorageType> operator/(typename StorageType::Scalar scalar, const Matrix<StorageType>& matrix)
 	noexcept(noexcept(std::declval<Matrix<StorageType>&>() /= scalar))
 {
 	auto result = matrix;

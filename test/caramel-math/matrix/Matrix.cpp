@@ -411,4 +411,19 @@ TEST_F(MatrixTest, MatrixMultiplicationByScalarIsPotentiallyThrowingIfStorageIsP
 	static_assert(!noexcept(std::declval<Matrix&>() /= 0.0f));
 }
 
+TEST_F(MatrixTest, TransposeTransposesCurrentMatrix) {
+	using Matrix = Matrix<ArrayStorage<BasicScalarTraits<int>, 2, 2, ThrowingErrorHandler>>;
+	auto matrix = Matrix(
+		0, 1,
+		2, 3
+		);
+
+	matrix.transpose();
+
+	EXPECT_EQ(matrix.get(0, 0), 0);
+	EXPECT_EQ(matrix.get(0, 1), 2);
+	EXPECT_EQ(matrix.get(1, 0), 1);
+	EXPECT_EQ(matrix.get(1, 1), 3);
+}
+
 } // anonymous namespace
