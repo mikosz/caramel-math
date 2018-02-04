@@ -10,6 +10,34 @@ namespace caramel_math::matrix {
 namespace detail {
 
 template <class StorageType>
+struct IsArrayStorage {
+	enum { VALUE = false };
+};
+
+template <
+	class ScalarTraitsType,
+	size_t ROWS,
+	size_t COLUMNS,
+	class ErrorHandlerType
+	>
+struct IsArrayStorage<ArrayStorage<ScalarTraitsType, ROWS, COLUMNS, ErrorHandlerType>> {
+	enum { VALUE = true };
+};
+
+template <class StorageType>
+struct IsAffineTransformStorage {
+	enum { VALUE = false };
+};
+
+template <
+	class ScalarTraitsType,
+	class ErrorHandlerType
+	>
+struct IsAffineTransformStorage<AffineTransformStorage<ScalarTraitsType, ErrorHandlerType>> {
+	enum { VALUE = true };
+};
+
+template <class StorageType>
 struct EffectiveStorageType {
 	using Type = StorageType;
 };
@@ -20,6 +48,39 @@ template <
 	>
 struct EffectiveStorageType<ViewStorage<ViewedMatrixType, ModifierFuncType>> {
 	using Type = typename EffectiveStorageType<typename ViewedMatrixType::Storage>::Type;
+};
+
+template <class StorageType, class = void>
+struct TransposedStorageType;
+
+template <class StorageType>
+struct TransposedStorageType<
+	StorageType,
+	std::enable_if_t<
+		StorageType::ROWS == StorageType::COLUMNS &&
+		!IsAffineTransformStorage<StorageType>::VALUE
+		>
+	>
+{
+	using Type = StorageType;
+};
+
+template <class StorageType>
+struct TransposedStorageType<
+	StorageType,
+	std::enable_if_t<
+		StorageType::ROWS != StorageType::COLUMNS ||
+		IsAffineTransformStorage<StorageType>::VALUE
+		>
+	>
+{
+	using Type = ArrayStorage<
+		typename StorageType::ScalarTraits,
+		StorageType::COLUMNS,
+		StorageType::ROWS,
+		typename StorageType::ErrorHandler
+		>
+		;
 };
 
 template <class LHSStorageType, class RHSStorageType, size_t ROWS, size_t COLUMNS, class = void>
@@ -55,21 +116,6 @@ struct BinaryOperatorResultType<
 	using Type = ArrayStorage<LHSScalarTraitsType, ROWS, COLUMNS, LHSErrorHandlerType>;
 };
 
-template <class StorageType>
-struct IsArrayStorage {
-	enum { VALUE = false };
-};
-
-template <
-	class ScalarTraitsType,
-	size_t ROWS,
-	size_t COLUMNS,
-	class ErrorHandlerType
-	>
-struct IsArrayStorage<ArrayStorage<ScalarTraitsType, ROWS, COLUMNS, ErrorHandlerType>> {
-	enum { VALUE = true };
-};
-
 template <
 	class LHSStorageType,
 	class RHSScalarTraitsType,
@@ -97,6 +143,9 @@ struct BinaryOperatorResultType<
 
 template <class StorageType>
 using EffectiveStorageType = typename detail::EffectiveStorageType<StorageType>::Type;
+
+template <class StorageType>
+using TransposedStorageType = typename detail::TransposedStorageType<EffectiveStorageType<StorageType>>::Type;
 
 template <class LHSStorageType, class RHSStorageType, size_t ROWS, size_t COLUMNS>
 using BinaryOperatorResultType = typename detail::BinaryOperatorResultType<

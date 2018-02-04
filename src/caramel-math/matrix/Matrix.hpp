@@ -56,7 +56,7 @@ public:
 
 	using StorageType::set;
 
-	Matrix& transpose() noexcept(noexcept(set(0, 0, std::declval<Scalar>()))) {
+	Matrix& transpose() noexcept {
 		static_assert(ROWS == COLUMNS, "Can't assign transposed matrix to self for non-square matrices");
 		for (auto rowIdx = 0u; rowIdx < ROWS; ++rowIdx) {
 			for (auto columnIdx = 0u; columnIdx < rowIdx; ++columnIdx) {
@@ -67,6 +67,10 @@ public:
 		}
 
 		return *this;
+	}
+
+	const Storage& storage() const noexcept {
+		return static_cast<const StorageType&>(*this);
 	}
 
 };

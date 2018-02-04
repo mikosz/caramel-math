@@ -53,7 +53,7 @@ TEST(StorageTraitsTest, BinaryOperatorResultTypeWithBothArrayStorageIsLHSArraySt
 	static_assert(std::is_same_v<BinaryOperatorResultType<LHSArrayStorage, RHSArrayStorage, 1, 2>, LHSArrayStorage>);
 }
 
-TEST(StorageTraitsTest, BinaryOperatorResultTypeWithSameStoregeTypesIsTheStorageType) {
+TEST(StorageTraitsTest, BinaryOperatorResultTypeWithSameStorageTypesIsTheStorageType) {
 	using ArrayStorage = ArrayStorage<BasicScalarTraits<float>, 1, 2, AssertErrorHandler>;
 	static_assert(std::is_same_v<BinaryOperatorResultType<ArrayStorage, ArrayStorage, 1, 2>, ArrayStorage>);
 

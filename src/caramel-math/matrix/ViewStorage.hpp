@@ -21,9 +21,11 @@ public:
 
 	using Scalar = typename ViewedMatrix::Scalar;
 
-	static constexpr auto ROWS = ViewedMatrix::COLUMNS;
+	using ErrorHandler = typename ViewedMatrix::Storage::ErrorHandler;
 
-	static constexpr auto COLUMNS = ViewedMatrix::ROWS;
+	static constexpr auto ROWS = ModifierFuncType::rows(ViewedMatrix::ROWS, ViewedMatrix::COLUMNS);
+
+	static constexpr auto COLUMNS = ModifierFuncType::columns(ViewedMatrix::ROWS, ViewedMatrix::COLUMNS);
 
 	ViewStorage(ViewedMatrix& viewedMatrix, ModifierFunc modifierFunc = ModifierFunc()) :
 		viewedMatrix_(viewedMatrix),
@@ -34,10 +36,8 @@ public:
 	decltype(auto) get(size_t row, size_t column) const noexcept(
 		noexcept(viewedMatrix_.get(row, column)))
 	{
-		auto modifiedRow = size_t();
-		auto modifiedColumn = size_t();
-		std::tie(modifiedRow, modifiedColumn) = modifierFunc_(row, column);
-		return viewedMatrix_.get(modifiedRow, modifiedColumn);
+		const auto modifiedCoords = modifierFunc_(row, column);
+		return viewedMatrix_.get(std::get<0>(modifiedCoords), std::get<1>(modifiedCoords));
 	}
 
 	void set(size_t row, size_t column, Scalar scalar) noexcept(
@@ -69,9 +69,51 @@ namespace detail {
 
 struct TransposedModifierFunc {
 
+	static constexpr size_t rows([[maybe_unused]] size_t rows, size_t columns) noexcept {
+		return columns;
+	}
+
+	static constexpr size_t columns(size_t rows, [[maybe_unused]] size_t columns) noexcept {
+		return rows;
+	}
+
 	std::tuple<size_t, size_t> operator()(size_t row, size_t column) const noexcept {
 		return { column, row };
 	}
+
+};
+
+class SubmatrixModifierFunc {
+public:
+
+	static constexpr size_t rows(size_t rows, [[maybe_unused]] size_t columns) noexcept {
+		return rows - 1;
+	}
+
+	static constexpr size_t columns([[maybe_unused]] size_t rows, size_t columns) noexcept {
+		return columns - 1;
+	}
+
+	SubmatrixModifierFunc(size_t excludedRow, size_t excludedColumn) :
+		excludedRow_(excludedRow),
+		excludedColumn_(excludedColumn)
+	{
+	}
+
+	std::tuple<size_t, size_t> operator()(size_t row, size_t column) const noexcept {
+		return
+			{
+				((row < excludedRow_) ? row : row + 1),
+				((column < excludedColumn_) ? column : column + 1)
+			}
+			;
+	}
+
+private:
+
+	size_t excludedRow_;
+
+	size_t excludedColumn_;
 
 };
 
@@ -83,6 +125,27 @@ using TransposedViewStorage = ViewStorage<ViewedMatrixType, detail::TransposedMo
 template <class ViewedMatrixType>
 inline auto viewTransposed(ViewedMatrixType& matrix) noexcept {
 	return Matrix<TransposedViewStorage<ViewedMatrixType>>(matrix);
+}
+
+template <class ViewedMatrixType>
+using SubmatrixViewStorage = ViewStorage<ViewedMatrixType, detail::SubmatrixModifierFunc>;
+
+template <class ViewedMatrixType>
+inline auto viewSubmatrix(ViewedMatrixType& matrix, size_t excludedRow, size_t excludedColumn) noexcept {
+	if constexpr (RUNTIME_CHECKS) {
+		if (excludedRow >= ViewedMatrixType::ROWS || excludedColumn >= ViewedMatrixType::COLUMNS) {
+			using ErrorHandler = typename ViewedMatrixType::Storage::ErrorHandler;
+			ErrorHandler::invalidAccess<typename ViewedMatrixType::Scalar>(
+				excludedRow,
+				excludedColumn
+				);
+		}
+	}
+
+	return Matrix<SubmatrixViewStorage<ViewedMatrixType>>(
+		matrix,
+		detail::SubmatrixModifierFunc(excludedRow, excludedColumn)
+		);
 }
 
 } // namespace caramel_math::matrix

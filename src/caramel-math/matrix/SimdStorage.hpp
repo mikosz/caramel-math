@@ -3,6 +3,7 @@
 
 #include <array>
 
+#include "../detail/helper-type-traits.hpp"
 #include "../simd/Float4.hpp"
 #include "../setup.hpp"
 #include "matrixfwd.hpp"
@@ -15,7 +16,7 @@ public:
 
 	using ScalarTraits = ScalarTraitsType;
 
-	static_assert(std::is_same_v<typename ScalarTraits::Scalar, float>);
+	static_assert(std::is_same_v<typename ScalarTraits::Scalar, float>, "Non-float scalar type provided");
 
 	using Scalar = float;
 
@@ -27,10 +28,13 @@ public:
 
 	SimdStorage() = default;
 
-	template <class... CompatibleValues>
+	template <
+		class... CompatibleValues,
+		typename = std::enable_if_t<caramel_math::detail::AllConvertibleV<Scalar, CompatibleValues...>>
+		>
 	explicit SimdStorage(CompatibleValues&&... values) noexcept
 	{
-		static_assert(sizeof...(values) == ROWS * COLUMNS);
+		static_assert(sizeof...(values) == ROWS * COLUMNS, "Bad number of values provided");
 		init_(std::forward<CompatibleValues>(values)...);
 	}
 
