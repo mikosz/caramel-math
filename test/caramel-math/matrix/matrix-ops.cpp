@@ -62,4 +62,47 @@ TEST_F(MatrixOpsTest, DeterminantYieldsMatrixDeterminant) {
 	EXPECT_EQ(determinant(m), -13);
 }
 
+TEST_F(MatrixOpsTest, InverseYieldsMatrixInverse) {
+	using Matrix = Matrix<ArrayStorage<BasicScalarTraits<float>, 3, 3, ThrowingErrorHandler>>;
+	const auto m = Matrix(
+		-1.0f, 1.0f, 2.0f,
+		-2.0f, 3.0f, -3.0f,
+		4.0f, -4.0f, 5.0f
+		);
+
+	const auto i = inverse(m);
+
+	ASSERT_TRUE(i);
+	EXPECT_FLOAT_EQ(i->get(0, 0), -3.0f / 13.0f);
+	// TODO: ...
+}
+
+TEST_F(MatrixOpsTest, InverseAffineTransformYieldsMatrixInverse) {
+	using Matrix = Matrix<AffineTransformStorage<BasicScalarTraits<float>, ThrowingErrorHandler>>;
+	auto m = Matrix::IDENTITY;
+
+	m.set(0, 3, 1.0f);
+	m.set(1, 3, 2.0f);
+	m.set(2, 3, 3.0f);
+
+	const auto i = inverse(m);
+
+	ASSERT_TRUE(i);
+
+	EXPECT_FLOAT_EQ(i->get(0, 0), 1.0f);
+	EXPECT_FLOAT_EQ(i->get(0, 1), 0.0f);
+	EXPECT_FLOAT_EQ(i->get(0, 2), 0.0f);
+	EXPECT_FLOAT_EQ(i->get(0, 3), -1.0f);
+
+	EXPECT_FLOAT_EQ(i->get(1, 0), 0.0f);
+	EXPECT_FLOAT_EQ(i->get(1, 1), 1.0f);
+	EXPECT_FLOAT_EQ(i->get(1, 2), 0.0f);
+	EXPECT_FLOAT_EQ(i->get(1, 3), -2.0f);
+
+	EXPECT_FLOAT_EQ(i->get(2, 0), 0.0f);
+	EXPECT_FLOAT_EQ(i->get(2, 1), 0.0f);
+	EXPECT_FLOAT_EQ(i->get(2, 2), 1.0f);
+	EXPECT_FLOAT_EQ(i->get(2, 3), -3.0f);
+}
+
 } // anonymous namespace
