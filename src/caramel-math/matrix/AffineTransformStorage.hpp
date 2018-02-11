@@ -63,7 +63,7 @@ public:
 	{
 	}
 
-	GetReturnType get(size_t row, size_t column) const noexcept(
+	GetReturnType get(Row row, Column column) const noexcept(
 		noexcept(ErrorHandler::invalidAccess<GetReturnType>(row, column)))
 	{
 		if constexpr (RUNTIME_CHECKS) {
@@ -83,7 +83,7 @@ public:
 		return data_[row * COLUMNS + column];
 	}
 
-	void set(size_t row, size_t column, Scalar scalar) noexcept(
+	void set(Row row, Column column, Scalar scalar) noexcept(
 		noexcept(ErrorHandler::invalidAccess<GetReturnType>(row, column)))
 	{
 		if constexpr (RUNTIME_CHECKS) {

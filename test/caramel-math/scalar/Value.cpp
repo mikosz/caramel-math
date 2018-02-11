@@ -9,10 +9,7 @@ namespace /* anonymous */ {
 class SomeValue : Value<SomeValue, int> {
 public:
 
-	constexpr SomeValue() :
-		Value<SomeValue, int>()
-	{
-	}
+	constexpr SomeValue() = default;
 
 	constexpr explicit SomeValue(int value) :
 		Value<SomeValue, int>(value)

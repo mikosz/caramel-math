@@ -8,10 +8,7 @@ template <class Subclass, class ScalarType>
 class Value {
 public:
 
-	constexpr Value() :
-		value_(ScalarType(0))
-	{
-	}
+	constexpr Value() = default;
 
 	constexpr explicit Value(ScalarType value) :
 		value_(std::move(value))
