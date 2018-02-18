@@ -1,43 +1,11 @@
 #ifndef CARAMELMATH_MATRIX_MATRIX_HPP__
 #define CARAMELMATH_MATRIX_MATRIX_HPP__
 
-#include "../scalar/Value.hpp"
 #include "storage-traits.hpp"
+#include "matrix-coordinates.hpp"
 #include "matrixfwd.hpp"
 
 namespace caramel_math::matrix {
-
-// TODO: size_t -> int?
-struct Row : private scalar::Value<Row, size_t> {
-
-	constexpr Row() = default;
-
-	constexpr explicit Row(size_t value) :
-		Value<Row, size_t>(value)
-	{
-	}
-
-	constexpr auto value() const noexcept {
-		return Value<Row, size_t>::value();
-	}
-
-
-};
-
-struct Column : private scalar::Value<Column, size_t> {
-
-	constexpr Column() = default;
-
-	constexpr explicit Column(size_t value) :
-		Value<Column, size_t>(value)
-	{
-	}
-
-	constexpr auto value() const noexcept {
-		return Value<Column, size_t>::value();
-	}
-
-};
 
 template <class StorageType>
 class Matrix final : StorageType {
@@ -75,8 +43,8 @@ public:
 		static_assert(ROWS == Matrix<OtherStorageType>::ROWS);
 		static_assert(COLUMNS == Matrix<OtherStorageType>::COLUMNS);
 
-		for (auto rowIdx = 0u; rowIdx < ROWS; ++rowIdx) {
-			for (auto columnIdx = 0u; columnIdx < COLUMNS; ++columnIdx) {
+		for (auto rowIdx = Row(0); rowIdx.value() < ROWS; ++rowIdx) {
+			for (auto columnIdx = Column(0); columnIdx.value() < COLUMNS; ++columnIdx) {
 				set(rowIdx, columnIdx, other.get(rowIdx, columnIdx));
 			}
 		}
@@ -90,12 +58,12 @@ public:
 	using StorageType::set;
 
 	Matrix& transpose() noexcept {
-		static_assert(ROWS == COLUMNS, "Can't assign transposed matrix to self for non-square matrices");
-		for (auto rowIdx = 0u; rowIdx < ROWS; ++rowIdx) {
-			for (auto columnIdx = 0u; columnIdx < rowIdx; ++columnIdx) {
+		static_assert(ROWS == COLUMNS, "Can't transpose self for non-square matrices");
+		for (auto rowIdx = Row(0); rowIdx.value() < ROWS; ++rowIdx) {
+			for (auto columnIdx = Column(0); columnIdx.value() < rowIdx.value(); ++columnIdx) {
 				auto stored = get(rowIdx, columnIdx);
-				set(rowIdx, columnIdx, get(columnIdx, rowIdx));
-				set(columnIdx, rowIdx, stored);
+				set(rowIdx, columnIdx, get(Row(columnIdx.value()), Column(rowIdx.value())));
+				set(Row(columnIdx.value()), Column(rowIdx.value()), stored);
 			}
 		}
 
@@ -113,8 +81,8 @@ namespace detail {
 template <class StorageType>
 Matrix<StorageType> zeroMatrix() {
 	auto zero = Matrix<StorageType>();
-	for (auto rowIdx = 0u; rowIdx < StorageType::ROWS; ++rowIdx) {
-		for (auto columnIdx = 0u; columnIdx < StorageType::COLUMNS; ++columnIdx) {
+	for (auto rowIdx = Row(0); rowIdx.value() < StorageType::ROWS; ++rowIdx) {
+		for (auto columnIdx = Column(0); columnIdx.value() < StorageType::COLUMNS; ++columnIdx) {
 			zero.set(rowIdx, columnIdx, StorageType::ScalarTraits::ZERO);
 		}
 	}
@@ -124,9 +92,9 @@ Matrix<StorageType> zeroMatrix() {
 template <class StorageType>
 Matrix<StorageType> identityMatrix() {
 	auto zero = Matrix<StorageType>();
-	for (auto rowIdx = 0u; rowIdx < StorageType::ROWS; ++rowIdx) {
-		for (auto columnIdx = 0u; columnIdx < StorageType::COLUMNS; ++columnIdx) {
-			if (rowIdx == columnIdx) {
+	for (auto rowIdx = Row(0); rowIdx.value() < StorageType::ROWS; ++rowIdx) {
+		for (auto columnIdx = Column(0); columnIdx.value() < StorageType::COLUMNS; ++columnIdx) {
+			if (rowIdx.value() == columnIdx.value()) {
 				zero.set(rowIdx, columnIdx, StorageType::ScalarTraits::ONE);
 			} else {
 				zero.set(rowIdx, columnIdx, StorageType::ScalarTraits::ZERO);
@@ -150,7 +118,7 @@ template <class LHSStorageType, class RHSStorageType>
 inline [[nodiscard]] bool operator==(
 	const Matrix<LHSStorageType>& lhs,
 	const Matrix<RHSStorageType>& rhs
-	) noexcept(noexcept(lhs.get(0, 0)) && noexcept(rhs.get(0, 0)))
+	) noexcept(noexcept(lhs.get(Row(0), Column(0))) && noexcept(rhs.get(Row(0), Column(0))))
 {
 	static_assert(
 		LHSStorageType::COLUMNS == RHSStorageType::COLUMNS &&
@@ -158,8 +126,8 @@ inline [[nodiscard]] bool operator==(
 		"Incompatible matrix sizes for equality test"
 		);
 
-	for (auto rowIdx = 0u; rowIdx < LHSStorageType::ROWS; ++rowIdx) {
-		for (auto columnIdx = 0u; columnIdx < LHSStorageType::COLUMNS; ++columnIdx) {
+	for (auto rowIdx = Row(0); rowIdx.value() < LHSStorageType::ROWS; ++rowIdx) {
+		for (auto columnIdx = Column(0); columnIdx.value() < LHSStorageType::COLUMNS; ++columnIdx) {
 			using ScalarTraits = typename LHSStorageType::ScalarTraits;
 			if (!ScalarTraits::equal(lhs.get(rowIdx, columnIdx), rhs.get(rowIdx, columnIdx))) {
 				return false;
@@ -183,7 +151,7 @@ template <class LHSStorageType, class RHSStorageType>
 inline [[nodiscard]] auto operator*(
 	const Matrix<LHSStorageType>& lhs,
 	const Matrix<RHSStorageType>& rhs
-	) noexcept(noexcept(lhs.get(0, 0)) && noexcept(rhs.get(0, 0)))
+	) noexcept(noexcept(lhs.get(Row(0), Column(0))) && noexcept(rhs.get(Row(0), Column(0))))
 {
 	static_assert(LHSStorageType::COLUMNS == RHSStorageType::ROWS, "Incompatible matrix sizes for multiplication");
 	using ResultStorageType =
@@ -192,11 +160,11 @@ inline [[nodiscard]] auto operator*(
 
 	auto result = ResultType();
 
-	for (auto rowIdx = 0u; rowIdx < LHSStorageType::ROWS; ++rowIdx) {
-		for (auto columnIdx = 0u; columnIdx < RHSStorageType::COLUMNS; ++columnIdx) {
+	for (auto rowIdx = Row(0); rowIdx.value() < LHSStorageType::ROWS; ++rowIdx) {
+		for (auto columnIdx = Column(0); columnIdx.value() < RHSStorageType::COLUMNS; ++columnIdx) {
 			auto dot = ResultType::ScalarTraits::ZERO;
 			for (auto dotIdx = 0u; dotIdx < LHSStorageType::COLUMNS; ++dotIdx) {
-				dot += lhs.get(rowIdx, dotIdx) * rhs.get(dotIdx, columnIdx);
+				dot += lhs.get(rowIdx, Column(dotIdx)) * rhs.get(Row(dotIdx), columnIdx);
 			}
 			result.set(rowIdx, columnIdx, dot);
 		}
@@ -217,10 +185,10 @@ inline auto& operator*=(
 
 template <class StorageType>
 inline Matrix<StorageType>& operator*=(Matrix<StorageType>& matrix, typename StorageType::Scalar scalar) noexcept(
-	noexcept(matrix.get(0, 0)))
+	noexcept(matrix.get(Row(0), Column(0))))
 {
-	for (auto rowIdx = 0u; rowIdx < StorageType::ROWS; ++rowIdx) {
-		for (auto columnIdx = 0u; columnIdx < StorageType::COLUMNS; ++columnIdx) {
+	for (auto rowIdx = Row(0); rowIdx.value() < StorageType::ROWS; ++rowIdx) {
+		for (auto columnIdx = Column(0); columnIdx.value() < StorageType::COLUMNS; ++columnIdx) {
 			matrix.set(rowIdx, columnIdx, matrix.get(rowIdx, columnIdx) * scalar);
 		}
 	}
@@ -248,10 +216,10 @@ inline [[nodiscard]] Matrix<StorageType> operator*(typename StorageType::Scalar 
 
 template <class StorageType>
 inline Matrix<StorageType>& operator/=(Matrix<StorageType>& matrix, typename StorageType::Scalar scalar) noexcept(
-	noexcept(matrix.get(0, 0)))
+	noexcept(matrix.get(Row(0), Column(0))))
 {
-	for (auto rowIdx = 0u; rowIdx < StorageType::ROWS; ++rowIdx) {
-		for (auto columnIdx = 0u; columnIdx < StorageType::COLUMNS; ++columnIdx) {
+	for (auto rowIdx = Row(0); rowIdx.value() < StorageType::ROWS; ++rowIdx) {
+		for (auto columnIdx = Column(0); columnIdx.value() < StorageType::COLUMNS; ++columnIdx) {
 			matrix.set(rowIdx, columnIdx, matrix.get(rowIdx, columnIdx) / scalar);
 		}
 	}
@@ -281,18 +249,18 @@ template <class StorageType>
 inline std::ostream& operator<<(std::ostream& os, const Matrix<StorageType>& matrix) noexcept {
 	os << "{ ";
 	
-	for (auto rowIdx = 0; rowIdx < Matrix<StorageType>::ROWS; ++rowIdx) {
+	for (auto rowIdx = Row(0); rowIdx.value() < Matrix<StorageType>::ROWS; ++rowIdx) {
 		os << "{ ";
 
-		for (auto columnIdx = 0; columnIdx < Matrix<StorageType>::COLUMNS; ++columnIdx) {
+		for (auto columnIdx = Column(0); columnIdx.value() < Matrix<StorageType>::COLUMNS; ++columnIdx) {
 			os << matrix.get(rowIdx, columnIdx);
 
-			if (columnIdx != Matrix<StorageType>::COLUMNS - 1) {
+			if (columnIdx.value() != Matrix<StorageType>::COLUMNS - 1) {
 				os << ", ";
 			}
 		}
 
-		if (rowIdx == Matrix<StorageType>::ROWS - 1) {
+		if (rowIdx.value() == Matrix<StorageType>::ROWS - 1) {
 			os << " }";
 		} else {
 			os << " }, ";
@@ -302,18 +270,6 @@ inline std::ostream& operator<<(std::ostream& os, const Matrix<StorageType>& mat
 	os << " }";
 
 	return os;
-}
-
-} // namespace caramel_math::matrix
-
-namespace caramel_math::matrix::literals {
-
-constexpr caramel_math::matrix::Row operator""_row(unsigned long long int row) {
-	return caramel_math::matrix::Row(size_t(row));
-}
-
-constexpr caramel_math::matrix::Column operator""_col(unsigned long long int column) {
-	return caramel_math::matrix::Column(size_t(column));
 }
 
 } // namespace caramel_math::matrix

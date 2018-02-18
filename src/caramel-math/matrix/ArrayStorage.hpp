@@ -5,6 +5,7 @@
 
 #include "../detail/helper-type-traits.hpp"
 #include "../setup.hpp"
+#include "matrix-coordinates.hpp"
 
 namespace caramel_math::matrix {
 

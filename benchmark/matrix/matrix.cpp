@@ -11,6 +11,7 @@
 
 using namespace caramel_math;
 using namespace caramel_math::matrix;
+using namespace caramel_math::matrix::literals;
 
 namespace /* anonymous */ {
 
@@ -37,7 +38,7 @@ template <class StorageType>
 void benchmarkMatrixGet(benchmark::State& state) {
 	auto m = Matrix<StorageType>();
 	for (auto _ : state) {
-		benchmark::DoNotOptimize(m.get(1, 2));
+		benchmark::DoNotOptimize(m.get(1_row, 2_col));
 	}
 }
 
@@ -50,7 +51,7 @@ template <class StorageType>
 void benchmarkMatrixGetColumn(benchmark::State& state) {
 	auto m = Matrix<StorageType>();
 	for (auto _ : state) {
-		benchmark::DoNotOptimize(m.get(1));
+		benchmark::DoNotOptimize(m.get(1_col));
 	}
 }
 
@@ -61,8 +62,8 @@ template <class StorageType>
 void benchmarkMatrixSetGet(benchmark::State& state) {
 	auto m = Matrix<StorageType>();
 	for (auto _ : state) {
-		m.set(1, 2, 0.3f);
-		benchmark::DoNotOptimize(m.get(1, 2));
+		m.set(1_row, 2_col, 0.3f);
+		benchmark::DoNotOptimize(m.get(1_row, 2_col));
 	}
 }
 
@@ -76,8 +77,8 @@ void benchmarkMatrixSetGetColumn(benchmark::State& state) {
 	auto m = Matrix<StorageType>();
 	auto f4 = simd::Float4({ 0.0f, 1.0f, 2.0f, 3.0f });
 	for (auto _ : state) {
-		m.set(1, f4);
-		benchmark::DoNotOptimize(m.get(1));
+		m.set(1_col, f4);
+		benchmark::DoNotOptimize(m.get(1_col));
 	}
 }
 

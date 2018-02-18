@@ -19,67 +19,102 @@ public:
 		return value_;
 	}
 
-	constexpr friend bool operator==(const Subclass& lhs, const Subclass& rhs) noexcept {
+	constexpr friend bool operator==(Subclass lhs, Subclass rhs) noexcept {
 		return lhs.value() == rhs.value();
 	}
 
-	constexpr friend bool operator!=(const Subclass& lhs, const Subclass& rhs) noexcept {
+	constexpr friend bool operator!=(Subclass lhs, Subclass rhs) noexcept {
 		return lhs.value() != rhs.value();
 	}
 
-	constexpr friend bool operator<(const Subclass& lhs, const Subclass& rhs) noexcept {
+	constexpr friend bool operator<(Subclass lhs, Subclass rhs) noexcept {
 		return lhs.value() < rhs.value();
 	}
 
-	constexpr friend bool operator<=(const Subclass& lhs, const Subclass& rhs) noexcept {
+	constexpr friend bool operator<=(Subclass lhs, Subclass rhs) noexcept {
 		return lhs.value() <= rhs.value();
 	}
 
-	constexpr friend bool operator>(const Subclass& lhs, const Subclass& rhs) noexcept {
+	constexpr friend bool operator>(Subclass lhs, Subclass rhs) noexcept {
 		return lhs.value() > rhs.value();
 	}
 
-	constexpr friend bool operator>=(const Subclass& lhs, const Subclass& rhs) noexcept {
+	constexpr friend bool operator>=(Subclass lhs, Subclass rhs) noexcept {
 		return lhs.value() >= rhs.value();
 	}
 
-	constexpr friend Subclass operator+(const Subclass& lhs, const Subclass& rhs) noexcept {
+	constexpr friend Subclass operator+(Subclass lhs, Subclass rhs) noexcept {
 		return Subclass(lhs.value() + rhs.value());
 	}
 
-	friend Subclass& operator+=(Subclass& lhs, const Subclass& rhs) noexcept {
+	friend Subclass& operator+=(Subclass& lhs, Subclass rhs) noexcept {
 		lhs = Subclass(lhs.value() + rhs.value());
 		return lhs;
 	}
 
-	constexpr friend Subclass operator-(const Subclass& lhs, const Subclass& rhs) noexcept {
+	friend Subclass& operator++(Subclass& v) noexcept {
+		v = Subclass(v.value() + 1);
+		return v;
+	}
+
+	friend Subclass operator++(Subclass& v, int) noexcept {
+		const auto currentValue = v.value();
+		v = Subclass(currentValue + 1);
+		return Subclass(currentValue);
+	}
+
+	friend Subclass& operator--(Subclass& v) noexcept {
+		v = Subclass(v.value() - 1);
+		return v;
+	}
+
+	friend Subclass operator--(Subclass& v, int) noexcept {
+		const auto currentValue = v.value();
+		v = Subclass(currentValue - 1);
+		return Subclass(currentValue);
+	}
+
+	constexpr friend Subclass operator-(Subclass lhs, Subclass rhs) noexcept {
 		return Subclass(lhs.value() - rhs.value());
 	}
 
-	friend Subclass& operator-=(Subclass& lhs, const Subclass& rhs) noexcept {
+	friend Subclass& operator-=(Subclass& lhs, Subclass rhs) noexcept {
 		lhs = Subclass(lhs.value() - rhs.value());
 		return lhs;
 	}
 
-	constexpr friend Subclass operator*(const Subclass& lhs, const Subclass& rhs) noexcept {
-		return Subclass(lhs.value() * rhs.value());
+	constexpr friend Subclass operator*(ScalarType lhs, Subclass rhs) noexcept {
+		return Subclass(lhs * rhs.value());
 	}
 
-	friend Subclass& operator*=(Subclass& lhs, const Subclass& rhs) noexcept {
-		lhs = Subclass(lhs.value() * rhs.value());
+	constexpr friend Subclass operator*(Subclass lhs, ScalarType rhs) noexcept {
+		return Subclass(lhs.value() * rhs);
+	}
+
+	friend Subclass& operator*=(Subclass& lhs, ScalarType rhs) noexcept {
+		lhs = Subclass(lhs.value() * rhs);
 		return lhs;
 	}
 
-	constexpr friend Subclass operator/(const Subclass& lhs, const Subclass& rhs) noexcept {
-		return Subclass(lhs.value() / rhs.value());
+	constexpr friend Subclass operator/(Subclass lhs, ScalarType rhs) noexcept {
+		return Subclass(lhs.value() / rhs);
 	}
 
-	friend Subclass& operator/=(Subclass& lhs, const Subclass& rhs) noexcept {
-		lhs = Subclass(lhs.value() / rhs.value());
+	friend Subclass& operator/=(Subclass& lhs, ScalarType rhs) noexcept {
+		lhs = Subclass(lhs.value() / rhs);
 		return lhs;
 	}
 
-	friend std::ostream& operator<<(std::ostream& os, const Subclass& s) noexcept {
+	constexpr friend Subclass operator%(Subclass lhs, ScalarType rhs) noexcept {
+		return Subclass(lhs.value() % rhs);
+	}
+
+	friend Subclass& operator%=(Subclass& lhs, ScalarType rhs) noexcept {
+		lhs = Subclass(lhs.value() % rhs);
+		return lhs;
+	}
+
+	friend std::ostream& operator<<(std::ostream& os, Subclass s) noexcept {
 		return os << typeid(Subclass).name() << "(" << s.value() << ")";
 	}
 

@@ -65,21 +65,38 @@ TEST(ValueTest, ValuesAreAdditive) {
 	EXPECT_EQ(sevenMinusEqFour, three);
 }
 
+TEST(ValueTest, ValuesAreIncrementableAndDecrementable) {
+	auto oneTwoThree = SomeValue(1);
+
+	EXPECT_EQ(++oneTwoThree, SomeValue(2));
+	EXPECT_EQ(oneTwoThree++, SomeValue(2));
+	EXPECT_EQ(oneTwoThree, SomeValue(3));
+
+	EXPECT_EQ(--oneTwoThree, SomeValue(2));
+	EXPECT_EQ(oneTwoThree--, SomeValue(2));
+	EXPECT_EQ(oneTwoThree, SomeValue(1));
+}
+
 TEST(ValueTest, ValuesAreMultiplicative) {
 	constexpr auto three = SomeValue(3);
 	constexpr auto four = SomeValue(4);
 	constexpr auto twelve = SomeValue(12);
 
 	auto threeTimesEqFour = three;
-	threeTimesEqFour *= four;
+	threeTimesEqFour *= 4;
 
 	auto twelveDivEqFour = twelve;
-	twelveDivEqFour /= four;
+	twelveDivEqFour /= 4;
 
-	static_assert(three * four == twelve);
-	static_assert(twelve / four == three);
+	auto threeModEqFour = three;
+	threeModEqFour %= 4;
+
+	static_assert(three * 4 == twelve);
+	static_assert(twelve / 4 == three);
+	static_assert(three % 4 == three);
 	EXPECT_EQ(threeTimesEqFour, twelve);
 	EXPECT_EQ(twelveDivEqFour, three);
+	EXPECT_EQ(threeModEqFour, three);
 }
 
 } // anonymous namespace

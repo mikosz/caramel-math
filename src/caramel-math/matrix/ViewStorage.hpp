@@ -4,6 +4,7 @@
 #include <tuple>
 
 #include "../setup.hpp"
+#include "matrix-coordinates.hpp"
 #include "Matrix.hpp"
 
 namespace caramel_math::matrix {
@@ -133,7 +134,11 @@ using SubmatrixViewStorage = ViewStorage<ViewedMatrixType, detail::SubmatrixModi
 template <class ViewedMatrixType>
 inline auto viewSubmatrix(ViewedMatrixType& matrix, Row excludedRow, Column excludedColumn) noexcept {
 	if constexpr (RUNTIME_CHECKS) {
-		if (excludedRow >= ViewedMatrixType::ROWS || excludedColumn >= ViewedMatrixType::COLUMNS) {
+		if (
+			excludedRow.value() >= ViewedMatrixType::ROWS ||
+			excludedColumn.value() >= ViewedMatrixType::COLUMNS
+			)
+		{
 			using ErrorHandler = typename ViewedMatrixType::Storage::ErrorHandler;
 			ErrorHandler::invalidAccess<typename ViewedMatrixType::Scalar>(
 				excludedRow,

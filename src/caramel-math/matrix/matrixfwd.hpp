@@ -3,6 +3,9 @@
 
 namespace caramel_math::matrix {
 
+struct Row;
+struct  Column;
+
 template <class StorageType>
 class Matrix;
 
