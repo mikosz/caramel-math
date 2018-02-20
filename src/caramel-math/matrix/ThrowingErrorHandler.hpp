@@ -4,7 +4,7 @@
 #include <string>
 #include <stdexcept>
 
-#include "Matrix.hpp"
+#include "matrix-coordinates.hpp"
 
 namespace caramel_math::matrix {
 

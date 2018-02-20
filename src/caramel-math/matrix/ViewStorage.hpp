@@ -5,7 +5,7 @@
 
 #include "../setup.hpp"
 #include "matrix-coordinates.hpp"
-#include "Matrix.hpp"
+#include "Matrix.template.hpp"
 
 namespace caramel_math::matrix {
 
