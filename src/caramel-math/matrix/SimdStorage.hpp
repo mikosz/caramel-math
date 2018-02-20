@@ -20,6 +20,8 @@ public:
 
 	using Scalar = float;
 
+	using GetReturnType = float;
+
 	using ErrorHandler = ErrorHandlerType;
 
 	static constexpr auto ROWS = 4;

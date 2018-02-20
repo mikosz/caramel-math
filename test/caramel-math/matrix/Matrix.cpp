@@ -19,6 +19,7 @@ template <size_t ROWS_VALUE, size_t COLUMNS_VALUE>
 struct TestStorage {
 	using ScalarTraits = BasicScalarTraits<float>;
 	using Scalar = typename ScalarTraits::Scalar;
+	using GetReturnType = Scalar;
 	static constexpr auto ROWS = ROWS_VALUE;
 	static constexpr auto COLUMNS = COLUMNS_VALUE;
 };
@@ -64,6 +65,7 @@ MockStorage* MockStorage::instance = nullptr;
 struct MockStorageProxy {
 
 	using Scalar = float;
+	using GetReturnType = Scalar;
 	static constexpr auto ROWS = 1;
 	static constexpr auto COLUMNS = 2;
 
@@ -167,18 +169,18 @@ TEST_F(MatrixTest, GetCallsStorageGet) {
 
 	{
 		const auto f = 42.0f;
-		EXPECT_CALL(*MockStorage::instance, get(0_row, 1_col)).WillOnce(testing::Return(f));
-		const auto result = matrix.get(0_row, 1_col);
-		EXPECT_EQ(f, result);
+		EXPECT_CALL(*MockStorage::instance, get(0_row, 1_col)).Times(2).WillRepeatedly(testing::Return(f));
+		EXPECT_EQ(f, matrix.get(0_row, 1_col));
+		EXPECT_EQ(f, matrix.get(1_col, 0_row));
 	}
 
 	{
 		const auto f = 42.0f;
-		EXPECT_CALL(*MockStorage::instance, get(0_row, 1_col)).WillOnce(testing::Return(f));
+		EXPECT_CALL(*MockStorage::instance, get(0_row, 1_col)).Times(2).WillRepeatedly(testing::Return(f));
 
 		const auto& constMatrix = matrix;
-		const auto result = constMatrix.get(0_row, 1_col);
-		EXPECT_EQ(f, result);
+		EXPECT_EQ(f, constMatrix.get(0_row, 1_col));
+		EXPECT_EQ(f, constMatrix.get(1_col, 0_row));
 	}
 }
 
@@ -186,8 +188,9 @@ TEST_F(MatrixTest, SetCallsStorageSet) {
 	auto matrix = Matrix<MockStorageProxy>();
 
 	const auto f = 42.0f;
-	EXPECT_CALL(*MockStorage::instance, set(0_row, 1_col, f)).Times(1);
+	EXPECT_CALL(*MockStorage::instance, set(0_row, 1_col, f)).Times(2);
 	matrix.set(0_row, 1_col, f);
+	matrix.set(1_col, 0_row, f);
 }
 
 TEST_F(MatrixTest, MatrixConstantsDeriveFromStorage) {
@@ -200,27 +203,33 @@ TEST_F(MatrixTest, MatrixConstantsDeriveFromStorage) {
 TEST_F(MatrixTest, GetIsNoexceptIfStorageGetIsNoexcept) {
 	auto matrix = Matrix<NoexceptStorage<12, 34>>();
 	static_assert(noexcept(matrix.get(0_row, 0_col)));
+	static_assert(noexcept(matrix.get(0_col, 0_row)));
 
 	const auto& constMatrix = matrix;
 	static_assert(noexcept(constMatrix.get(0_row, 0_col)));
+	static_assert(noexcept(constMatrix.get(0_col, 0_row)));
 }
 
 TEST_F(MatrixTest, GetIsPotentiallyThrowingIfStorageGetIsPotentiallyThrowing) {
 	auto matrix = Matrix<PotentiallyThrowingStorage<12, 34>>();
 	static_assert(!noexcept(matrix.get(0_row, 0_col)));
+	static_assert(!noexcept(matrix.get(0_col, 0_row)));
 
 	const auto& constMatrix = matrix;
 	static_assert(!noexcept(constMatrix.get(0_row, 0_col)));
+	static_assert(!noexcept(constMatrix.get(0_col, 0_row)));
 }
 
 TEST_F(MatrixTest, SetIsNoexceptIfStorageSetIsNoexcept) {
 	auto matrix = Matrix<NoexceptStorage<12, 34>>();
 	static_assert(noexcept(matrix.set(0_row, 0_col, 0.0f)));
+	static_assert(noexcept(matrix.set(0_col, 0_row, 0.0f)));
 }
 
 TEST_F(MatrixTest, SetIsPotentiallyThrowingIfStorageSetIsPotentiallyThrowing) {
 	auto matrix = Matrix<PotentiallyThrowingStorage<12, 34>>();
 	static_assert(!noexcept(matrix.set(0_row, 0_col, 0.0f)));
+	static_assert(!noexcept(matrix.set(0_col, 0_row, 0.0f)));
 }
 
 TEST_F(MatrixTest, MatrixMultiplicationWorks) {

@@ -52,10 +52,19 @@ public:
 		return *this;
 	}
 
-	// Inherit get/set functions
 	using StorageType::get;
 
+	typename StorageType::GetReturnType get(Column column, Row row) const
+		noexcept(noexcept(get(row, column)))
+	{
+		return get(row, column);
+	}
+
 	using StorageType::set;
+
+	void set(Column column, Row row, Scalar scalar) noexcept(noexcept(set(row, column, scalar))) {
+		return set(row, column, std::move(scalar));
+	}
 
 	Matrix& transpose() noexcept {
 		static_assert(ROWS == COLUMNS, "Can't transpose self for non-square matrices");

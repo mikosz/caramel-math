@@ -24,6 +24,8 @@ public:
 
 	using ErrorHandler = typename ViewedMatrix::Storage::ErrorHandler;
 
+	using GetReturnType = typename ViewedMatrix::Storage::GetReturnType;
+
 	static constexpr auto ROWS = ModifierFuncType::rows(ViewedMatrix::ROWS, ViewedMatrix::COLUMNS);
 
 	static constexpr auto COLUMNS = ModifierFuncType::columns(ViewedMatrix::ROWS, ViewedMatrix::COLUMNS);
@@ -34,7 +36,7 @@ public:
 	{
 	}
 
-	decltype(auto) get(Row row, Column column) const noexcept(
+	GetReturnType get(Row row, Column column) const noexcept(
 		noexcept(viewedMatrix_.get(row, column)))
 	{
 		const auto modifiedCoords = modifierFunc_(row, column);
