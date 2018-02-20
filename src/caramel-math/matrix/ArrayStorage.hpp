@@ -5,6 +5,7 @@
 
 #include "../detail/helper-type-traits.hpp"
 #include "../setup.hpp"
+#include "matrix-coordinates.hpp"
 
 namespace caramel_math::matrix {
 
@@ -45,27 +46,27 @@ public:
 		static_assert(sizeof...(values) == ROWS * COLUMNS);
 	}
 
-	GetReturnType get(size_t row, size_t column) const noexcept(
+	GetReturnType get(Row row, Column column) const noexcept(
 		noexcept(ErrorHandler::invalidAccess<GetReturnType>(row, column)))
 	{
 		if constexpr (RUNTIME_CHECKS) {
-			if (row >= ROWS || column >= COLUMNS) {
+			if (row.value() >= ROWS || column.value() >= COLUMNS) {
 				return ErrorHandler::invalidAccess<GetReturnType>(row, column);
 			}
 		}
-		return data_[row * COLUMNS + column];
+		return data_[row.value() * COLUMNS + column.value()];
 	}
 
-	void set(size_t row, size_t column, Scalar scalar) noexcept(
+	void set(Row row, Column column, Scalar scalar) noexcept(
 		noexcept(ErrorHandler::invalidAccess<GetReturnType>(row, column)))
 	{
 		if constexpr (RUNTIME_CHECKS) {
-			if (row >= ROWS || column >= COLUMNS) {
+			if (row.value() >= ROWS || column.value() >= COLUMNS) {
 				ErrorHandler::invalidAccess<GetReturnType>(row, column);
 				return;
 			}
 		}
-		data_[row * COLUMNS + column] = std::move(scalar);
+		data_[row.value() * COLUMNS + column.value()] = std::move(scalar);
 	}
 
 private:

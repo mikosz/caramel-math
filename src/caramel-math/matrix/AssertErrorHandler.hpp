@@ -4,12 +4,14 @@
 #include <cassert>
 #include <type_traits>
 
+#include "Matrix.hpp"
+
 namespace caramel_math::matrix {
 
 struct AssertErrorHandler final {
 	
 	template <class ReturnType>
-	static ReturnType invalidAccess([[maybe_unused]] size_t row, [[maybe_unused]] size_t column) noexcept {
+	static ReturnType invalidAccess([[maybe_unused]] Row row, [[maybe_unused]] Column column) noexcept {
 		assert(!"Invalid matrix data access");
 		
 		static auto returnValue = std::decay_t<ReturnType>();
@@ -18,8 +20,8 @@ struct AssertErrorHandler final {
 
 	template <class ScalarType>
 	static void invalidValue(
-		[[maybe_unused]] size_t row,
-		[[maybe_unused]] size_t column,
+		[[maybe_unused]] Row row,
+		[[maybe_unused]] Column column,
 		[[maybe_unused]] ScalarType actualValue,
 		[[maybe_unused]] ScalarType expectedValue
 		) noexcept

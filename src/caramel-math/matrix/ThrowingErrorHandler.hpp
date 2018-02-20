@@ -4,32 +4,38 @@
 #include <string>
 #include <stdexcept>
 
+#include "Matrix.hpp"
+
 namespace caramel_math::matrix {
 
 class InvalidMatrixDataAccess final : public std::logic_error {
 public:
 
-	InvalidMatrixDataAccess(size_t row, size_t column) noexcept :
+	InvalidMatrixDataAccess(Row row, Column column) noexcept :
 		std::logic_error(
-			"Invalid matrix data access at row " + std::to_string(row) + ", column " + std::to_string(column)),
+			"Invalid matrix data access at row " +
+			std::to_string(row.value()) +
+			", column " +
+			std::to_string(column.value())
+			),
 		row_(row),
 		column_(column)
 	{
 	}
 
-	size_t row() const noexcept {
+	Row row() const noexcept {
 		return row_;
 	}
 
-	size_t column() const noexcept {
+	Column column() const noexcept {
 		return column_;
 	}
 
 private:
 
-	size_t row_;
+	Row row_;
 
-	size_t column_;
+	Column column_;
 
 };
 
@@ -39,10 +45,16 @@ public:
 
 	using Scalar = ScalarType;
 
-	InvalidMatrixDataValue(size_t row, size_t column, Scalar actualValue, Scalar expectedValue) noexcept :
+	InvalidMatrixDataValue(Row row, Column column, Scalar actualValue, Scalar expectedValue) noexcept :
 		std::logic_error(
-			"Invalid matrix data value at row " + std::to_string(row) + ", column " + std::to_string(column) +
-			" - got " + std::to_string(actualValue) + ", expected " + std::to_string(expectedValue)
+			"Invalid matrix data value at row " +
+			std::to_string(row.value()) +
+			", column " +
+			std::to_string(column.value()) +
+			" - got " +
+			std::to_string(actualValue) +
+			", expected " +
+			std::to_string(expectedValue)
 			),
 		row_(row),
 		column_(column),
@@ -51,11 +63,11 @@ public:
 	{
 	}
 
-	size_t row() const noexcept {
+	Row row() const noexcept {
 		return row_;
 	}
 
-	size_t column() const noexcept {
+	Column column() const noexcept {
 		return column_;
 	}
 
@@ -69,9 +81,9 @@ public:
 
 private:
 
-	size_t row_;
+	Row row_;
 
-	size_t column_;
+	Column column_;
 
 	Scalar actualValue_;
 
@@ -82,14 +94,14 @@ private:
 struct ThrowingErrorHandler final {
 
 	template <class ReturnType>
-	static ReturnType invalidAccess(size_t row, size_t column) {
+	static ReturnType invalidAccess(Row row, Column column) {
 		throw InvalidMatrixDataAccess(row, column);
 	}
 
 	template <class ScalarType>
 	static void invalidValue(
-		size_t row,
-		size_t column,
+		Row row,
+		Column column,
 		ScalarType actualValue,
 		ScalarType expectedValue
 		)

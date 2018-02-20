@@ -4,6 +4,7 @@
 #include <tuple>
 
 #include "../setup.hpp"
+#include "matrix-coordinates.hpp"
 #include "Matrix.hpp"
 
 namespace caramel_math::matrix {
@@ -23,6 +24,8 @@ public:
 
 	using ErrorHandler = typename ViewedMatrix::Storage::ErrorHandler;
 
+	using GetReturnType = typename ViewedMatrix::Storage::GetReturnType;
+
 	static constexpr auto ROWS = ModifierFuncType::rows(ViewedMatrix::ROWS, ViewedMatrix::COLUMNS);
 
 	static constexpr auto COLUMNS = ModifierFuncType::columns(ViewedMatrix::ROWS, ViewedMatrix::COLUMNS);
@@ -33,18 +36,18 @@ public:
 	{
 	}
 
-	decltype(auto) get(size_t row, size_t column) const noexcept(
+	GetReturnType get(Row row, Column column) const noexcept(
 		noexcept(viewedMatrix_.get(row, column)))
 	{
 		const auto modifiedCoords = modifierFunc_(row, column);
 		return viewedMatrix_.get(std::get<0>(modifiedCoords), std::get<1>(modifiedCoords));
 	}
 
-	void set(size_t row, size_t column, Scalar scalar) noexcept(
+	void set(Row row, Column column, Scalar scalar) noexcept(
 		noexcept(viewedMatrix_.set(row, column, scalar)))
 	{
-		auto modifiedRow = size_t();
-		auto modifiedColumn = size_t();
+		auto modifiedRow = Row();
+		auto modifiedColumn = Column();
 		std::tie(modifiedRow, modifiedColumn) = modifierFunc_(row, column);
 		return viewedMatrix_.set(modifiedRow, modifiedColumn, std::move(scalar));
 	}
@@ -77,8 +80,8 @@ struct TransposedModifierFunc {
 		return rows;
 	}
 
-	std::tuple<size_t, size_t> operator()(size_t row, size_t column) const noexcept {
-		return { column, row };
+	std::tuple<Row, Column> operator()(Row row, Column column) const noexcept {
+		return { Row(column.value()), Column(row.value()) };
 	}
 
 };
@@ -94,26 +97,26 @@ public:
 		return columns - 1;
 	}
 
-	SubmatrixModifierFunc(size_t excludedRow, size_t excludedColumn) :
+	SubmatrixModifierFunc(Row excludedRow, Column excludedColumn) :
 		excludedRow_(excludedRow),
 		excludedColumn_(excludedColumn)
 	{
 	}
 
-	std::tuple<size_t, size_t> operator()(size_t row, size_t column) const noexcept {
+	std::tuple<Row, Column> operator()(Row row, Column column) const noexcept {
 		return
 			{
-				((row < excludedRow_) ? row : row + 1),
-				((column < excludedColumn_) ? column : column + 1)
+				((row < excludedRow_) ? row : row + Row(1)),
+				((column < excludedColumn_) ? column : column + Column(1))
 			}
 			;
 	}
 
 private:
 
-	size_t excludedRow_;
+	Row excludedRow_;
 
-	size_t excludedColumn_;
+	Column excludedColumn_;
 
 };
 
@@ -131,9 +134,13 @@ template <class ViewedMatrixType>
 using SubmatrixViewStorage = ViewStorage<ViewedMatrixType, detail::SubmatrixModifierFunc>;
 
 template <class ViewedMatrixType>
-inline auto viewSubmatrix(ViewedMatrixType& matrix, size_t excludedRow, size_t excludedColumn) noexcept {
+inline auto viewSubmatrix(ViewedMatrixType& matrix, Row excludedRow, Column excludedColumn) noexcept {
 	if constexpr (RUNTIME_CHECKS) {
-		if (excludedRow >= ViewedMatrixType::ROWS || excludedColumn >= ViewedMatrixType::COLUMNS) {
+		if (
+			excludedRow.value() >= ViewedMatrixType::ROWS ||
+			excludedColumn.value() >= ViewedMatrixType::COLUMNS
+			)
+		{
 			using ErrorHandler = typename ViewedMatrixType::Storage::ErrorHandler;
 			ErrorHandler::invalidAccess<typename ViewedMatrixType::Scalar>(
 				excludedRow,

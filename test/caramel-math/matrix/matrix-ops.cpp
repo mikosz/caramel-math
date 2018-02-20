@@ -6,10 +6,12 @@
 #include "caramel-math/matrix/AffineTransformStorage.hpp"
 #include "caramel-math/matrix/SimdStorage.hpp"
 #include "caramel-math/matrix/ThrowingErrorHandler.hpp"
-#include "caramel-math/ScalarTraits.hpp"
+#include "caramel-math/scalar/ScalarTraits.hpp"
 
 using namespace caramel_math;
 using namespace caramel_math::matrix;
+using namespace caramel_math::scalar;
+using namespace caramel_math::matrix::literals;
 
 namespace /* anonymous */ {
 
@@ -25,10 +27,10 @@ TEST_F(MatrixOpsTest, TransposedYieldsTransposedMatrix) {
 
 	const auto t = transposed(matrix);
 
-	EXPECT_EQ(t.get(0, 0), 0);
-	EXPECT_EQ(t.get(0, 1), 2);
-	EXPECT_EQ(t.get(1, 0), 1);
-	EXPECT_EQ(t.get(1, 1), 3);
+	EXPECT_EQ(t.get(0_row, 0_col), 0);
+	EXPECT_EQ(t.get(0_row, 1_col), 2);
+	EXPECT_EQ(t.get(1_row, 0_col), 1);
+	EXPECT_EQ(t.get(1_row, 1_col), 3);
 }
 
 TEST_F(MatrixOpsTest, TransposedYieldsEffectiveTypeForSquareMatrices) {
@@ -73,7 +75,7 @@ TEST_F(MatrixOpsTest, InverseYieldsMatrixInverse) {
 	const auto i = inverse(m);
 
 	ASSERT_TRUE(i);
-	EXPECT_FLOAT_EQ(i->get(0, 0), -3.0f / 13.0f);
+	EXPECT_FLOAT_EQ(i->get(0_row, 0_col), -3.0f / 13.0f);
 	// TODO: ...
 }
 
@@ -81,28 +83,28 @@ TEST_F(MatrixOpsTest, InverseAffineTransformYieldsMatrixInverse) {
 	using Matrix = Matrix<AffineTransformStorage<BasicScalarTraits<float>, ThrowingErrorHandler>>;
 	auto m = Matrix::IDENTITY;
 
-	m.set(0, 3, 1.0f);
-	m.set(1, 3, 2.0f);
-	m.set(2, 3, 3.0f);
+	m.set(0_row, 3_col, 1.0f);
+	m.set(1_row, 3_col, 2.0f);
+	m.set(2_row, 3_col, 3.0f);
 
 	const auto i = inverse(m);
 
 	ASSERT_TRUE(i);
 
-	EXPECT_FLOAT_EQ(i->get(0, 0), 1.0f);
-	EXPECT_FLOAT_EQ(i->get(0, 1), 0.0f);
-	EXPECT_FLOAT_EQ(i->get(0, 2), 0.0f);
-	EXPECT_FLOAT_EQ(i->get(0, 3), -1.0f);
+	EXPECT_FLOAT_EQ(i->get(0_row, 0_col), 1.0f);
+	EXPECT_FLOAT_EQ(i->get(0_row, 1_col), 0.0f);
+	EXPECT_FLOAT_EQ(i->get(0_row, 2_col), 0.0f);
+	EXPECT_FLOAT_EQ(i->get(0_row, 3_col), -1.0f);
 
-	EXPECT_FLOAT_EQ(i->get(1, 0), 0.0f);
-	EXPECT_FLOAT_EQ(i->get(1, 1), 1.0f);
-	EXPECT_FLOAT_EQ(i->get(1, 2), 0.0f);
-	EXPECT_FLOAT_EQ(i->get(1, 3), -2.0f);
+	EXPECT_FLOAT_EQ(i->get(1_row, 0_col), 0.0f);
+	EXPECT_FLOAT_EQ(i->get(1_row, 1_col), 1.0f);
+	EXPECT_FLOAT_EQ(i->get(1_row, 2_col), 0.0f);
+	EXPECT_FLOAT_EQ(i->get(1_row, 3_col), -2.0f);
 
-	EXPECT_FLOAT_EQ(i->get(2, 0), 0.0f);
-	EXPECT_FLOAT_EQ(i->get(2, 1), 0.0f);
-	EXPECT_FLOAT_EQ(i->get(2, 2), 1.0f);
-	EXPECT_FLOAT_EQ(i->get(2, 3), -3.0f);
+	EXPECT_FLOAT_EQ(i->get(2_row, 0_col), 0.0f);
+	EXPECT_FLOAT_EQ(i->get(2_row, 1_col), 0.0f);
+	EXPECT_FLOAT_EQ(i->get(2_row, 2_col), 1.0f);
+	EXPECT_FLOAT_EQ(i->get(2_row, 3_col), -3.0f);
 }
 
 } // anonymous namespace

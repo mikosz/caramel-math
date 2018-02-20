@@ -2,11 +2,13 @@
 #include <gmock/gmock.h>
 
 #include "caramel-math/matrix/AffineTransformStorage.hpp"
-#include "caramel-math/ScalarTraits.hpp"
+#include "caramel-math/scalar/ScalarTraits.hpp"
 #include "MockErrorHandler.hpp"
 
 using namespace caramel_math;
 using namespace caramel_math::matrix;
+using namespace caramel_math::scalar;
+using namespace caramel_math::matrix::literals;
 using namespace caramel_math::matrix::test;
 
 namespace /* anonymous */ {
@@ -26,53 +28,53 @@ TEST_F(AffineTransformStorageTest, IsConstructibleWithListOfValues) {
 		8, 9, 10, 11
 		);
 
-	EXPECT_EQ(storage.get(0, 0), 0);
-	EXPECT_EQ(storage.get(0, 1), 1);
-	EXPECT_EQ(storage.get(0, 2), 2);
-	EXPECT_EQ(storage.get(0, 3), 3);
-	EXPECT_EQ(storage.get(1, 0), 4);
-	EXPECT_EQ(storage.get(1, 1), 5);
-	EXPECT_EQ(storage.get(1, 2), 6);
-	EXPECT_EQ(storage.get(1, 3), 7);
-	EXPECT_EQ(storage.get(2, 0), 8);
-	EXPECT_EQ(storage.get(2, 1), 9);
-	EXPECT_EQ(storage.get(2, 2), 10);
-	EXPECT_EQ(storage.get(2, 3), 11);
+	EXPECT_EQ(storage.get(0_row, 0_col), 0);
+	EXPECT_EQ(storage.get(0_row, 1_col), 1);
+	EXPECT_EQ(storage.get(0_row, 2_col), 2);
+	EXPECT_EQ(storage.get(0_row, 3_col), 3);
+	EXPECT_EQ(storage.get(1_row, 0_col), 4);
+	EXPECT_EQ(storage.get(1_row, 1_col), 5);
+	EXPECT_EQ(storage.get(1_row, 2_col), 6);
+	EXPECT_EQ(storage.get(1_row, 3_col), 7);
+	EXPECT_EQ(storage.get(2_row, 0_col), 8);
+	EXPECT_EQ(storage.get(2_row, 1_col), 9);
+	EXPECT_EQ(storage.get(2_row, 2_col), 10);
+	EXPECT_EQ(storage.get(2_row, 3_col), 11);
 }
 
 TEST_F(AffineTransformStorageTest, GetAndSetReturnAndUpdateStoredValue) {
 	auto storage = AffineTransformStorage<BasicScalarTraits<int>, MockErrorHandlerProxy>();
 
-	storage.set(0, 0, 0);
-	storage.set(0, 1, 1);
-	storage.set(0, 2, 2);
-	storage.set(0, 3, 3);
-	storage.set(1, 0, 4);
-	storage.set(1, 1, 5);
-	storage.set(1, 2, 6);
-	storage.set(1, 3, 7);
-	storage.set(2, 0, 8);
-	storage.set(2, 1, 9);
-	storage.set(2, 2, 10);
-	storage.set(2, 3, 11);
+	storage.set(0_row, 0_col, 0);
+	storage.set(0_row, 1_col, 1);
+	storage.set(0_row, 2_col, 2);
+	storage.set(0_row, 3_col, 3);
+	storage.set(1_row, 0_col, 4);
+	storage.set(1_row, 1_col, 5);
+	storage.set(1_row, 2_col, 6);
+	storage.set(1_row, 3_col, 7);
+	storage.set(2_row, 0_col, 8);
+	storage.set(2_row, 1_col, 9);
+	storage.set(2_row, 2_col, 10);
+	storage.set(2_row, 3_col, 11);
 
-	EXPECT_EQ(storage.get(0, 0), 0);
-	EXPECT_EQ(storage.get(0, 1), 1);
-	EXPECT_EQ(storage.get(0, 2), 2);
-	EXPECT_EQ(storage.get(0, 3), 3);
-	EXPECT_EQ(storage.get(1, 0), 4);
-	EXPECT_EQ(storage.get(1, 1), 5);
-	EXPECT_EQ(storage.get(1, 2), 6);
-	EXPECT_EQ(storage.get(1, 3), 7);
-	EXPECT_EQ(storage.get(2, 0), 8);
-	EXPECT_EQ(storage.get(2, 1), 9);
-	EXPECT_EQ(storage.get(2, 2), 10);
-	EXPECT_EQ(storage.get(2, 3), 11);
-
-	EXPECT_EQ(storage.get(3, 0), 0);
-	EXPECT_EQ(storage.get(3, 1), 0);
-	EXPECT_EQ(storage.get(3, 2), 0);
-	EXPECT_EQ(storage.get(3, 3), 1);
+	EXPECT_EQ(storage.get(0_row, 0_col), 0);
+	EXPECT_EQ(storage.get(0_row, 1_col), 1);
+	EXPECT_EQ(storage.get(0_row, 2_col), 2);
+	EXPECT_EQ(storage.get(0_row, 3_col), 3);
+	EXPECT_EQ(storage.get(1_row, 0_col), 4);
+	EXPECT_EQ(storage.get(1_row, 1_col), 5);
+	EXPECT_EQ(storage.get(1_row, 2_col), 6);
+	EXPECT_EQ(storage.get(1_row, 3_col), 7);
+	EXPECT_EQ(storage.get(2_row, 0_col), 8);
+	EXPECT_EQ(storage.get(2_row, 1_col), 9);
+	EXPECT_EQ(storage.get(2_row, 2_col), 10);
+	EXPECT_EQ(storage.get(2_row, 3_col), 11);
+	
+	EXPECT_EQ(storage.get(3_row, 0_col), 0);
+	EXPECT_EQ(storage.get(3_row, 1_col), 0);
+	EXPECT_EQ(storage.get(3_row, 2_col), 0);
+	EXPECT_EQ(storage.get(3_row, 3_col), 1);
 }
 
 TEST_F(AffineTransformStorageTest, SetCallsInvalidValueForValuesNotMatchingAnAffineTransformMatrix) {
@@ -80,16 +82,16 @@ TEST_F(AffineTransformStorageTest, SetCallsInvalidValueForValuesNotMatchingAnAff
 
 	{
 		testing::InSequence();
-		EXPECT_CALL(*MockErrorHandler::instance, invalidValue(3, 0, 1, 0));
-		EXPECT_CALL(*MockErrorHandler::instance, invalidValue(3, 1, 1, 0));
-		EXPECT_CALL(*MockErrorHandler::instance, invalidValue(3, 2, 1, 0));
-		EXPECT_CALL(*MockErrorHandler::instance, invalidValue(3, 3, 0, 1));
+		EXPECT_CALL(*MockErrorHandler::instance, invalidValue(3_row, 0_col, 1, 0));
+		EXPECT_CALL(*MockErrorHandler::instance, invalidValue(3_row, 1_col, 1, 0));
+		EXPECT_CALL(*MockErrorHandler::instance, invalidValue(3_row, 2_col, 1, 0));
+		EXPECT_CALL(*MockErrorHandler::instance, invalidValue(3_row, 3_col, 0, 1));
 	}
 
-	storage.set(3, 0, 1);
-	storage.set(3, 1, 1);
-	storage.set(3, 2, 1);
-	storage.set(3, 3, 0);
+	storage.set(3_row, 0_col, 1);
+	storage.set(3_row, 1_col, 1);
+	storage.set(3_row, 2_col, 1);
+	storage.set(3_row, 3_col, 0);
 }
 
 TEST_F(AffineTransformStorageTest, GetWithOutOfBoundsIndexCallsErrorHandler) {
@@ -100,14 +102,14 @@ TEST_F(AffineTransformStorageTest, GetWithOutOfBoundsIndexCallsErrorHandler) {
 	const auto errorValue = -42;
 
 	{
-		EXPECT_CALL(*MockErrorHandler::instance, invalidAccess(4, 0)).WillOnce(testing::Return(errorValue));
-		const auto value = storage.get(4, 0);
+		EXPECT_CALL(*MockErrorHandler::instance, invalidAccess(4_row, 0_col)).WillOnce(testing::Return(errorValue));
+		const auto value = storage.get(4_row, 0_col);
 		EXPECT_EQ(errorValue, value);
 	}
 
 	{
-		EXPECT_CALL(*MockErrorHandler::instance, invalidAccess(0, 4)).WillOnce(testing::Return(errorValue));
-		const auto value = storage.get(0, 4);
+		EXPECT_CALL(*MockErrorHandler::instance, invalidAccess(0_row, 4_col)).WillOnce(testing::Return(errorValue));
+		const auto value = storage.get(0_row, 4_col);
 		EXPECT_EQ(errorValue, value);
 	}
 
@@ -115,12 +117,12 @@ TEST_F(AffineTransformStorageTest, GetWithOutOfBoundsIndexCallsErrorHandler) {
 
 TEST_F(AffineTransformStorageTest, GetIsNoexceptIfErrorHandlerInvalidAccessIsNoexcept) {
 	auto storage = AffineTransformStorage<BasicScalarTraits<float>, NoexceptErrorHandler>();
-	static_assert(noexcept(storage.get(0, 0)));
+	static_assert(noexcept(storage.get(0_row, 0_col)));
 }
 
 TEST_F(AffineTransformStorageTest, GetIsPotentiallyThrowingIfErrorHandlerInvalidAccessIsPotentiallyThrowing) {
 	auto storage = AffineTransformStorage<BasicScalarTraits<float>, PotentiallyThrowingErrorHandler>();
-	static_assert(!noexcept(storage.get(0, 0)));
+	static_assert(!noexcept(storage.get(0_row, 0_col)));
 }
 
 TEST_F(AffineTransformStorageTest, SetWithOutOfBoundsIndexCallsErrorHandler) {
@@ -131,25 +133,25 @@ TEST_F(AffineTransformStorageTest, SetWithOutOfBoundsIndexCallsErrorHandler) {
 	const auto errorValue = -42;
 
 	{
-		EXPECT_CALL(*MockErrorHandler::instance, invalidAccess(4, 0)).WillOnce(testing::Return(errorValue));
-		storage.set(4, 0, 0);
+		EXPECT_CALL(*MockErrorHandler::instance, invalidAccess(4_row, 0_col)).WillOnce(testing::Return(errorValue));
+		storage.set(4_row, 0_col, 0);
 	}
 
 	{
-		EXPECT_CALL(*MockErrorHandler::instance, invalidAccess(0, 4)).WillOnce(testing::Return(errorValue));
-		storage.set(0, 4, 0);
+		EXPECT_CALL(*MockErrorHandler::instance, invalidAccess(0_row, 4_col)).WillOnce(testing::Return(errorValue));
+		storage.set(0_row, 4_col, 0);
 	}
 
 }
 
 TEST_F(AffineTransformStorageTest, SetIsNoexceptIfErrorHandlerInvalidAccessIsNoexcept) {
 	auto storage = AffineTransformStorage<BasicScalarTraits<float>, NoexceptErrorHandler>();
-	static_assert(noexcept(storage.set(0, 0, 0.0f)));
+	static_assert(noexcept(storage.set(0_row, 0_col, 0.0f)));
 }
 
 TEST_F(AffineTransformStorageTest, SetIsPotentiallyThrowingIfErrorHandlerInvalidAccessIsPotentiallyThrowing) {
 	auto storage = AffineTransformStorage<BasicScalarTraits<float>, PotentiallyThrowingErrorHandler>();
-	static_assert(!noexcept(storage.set(0, 0, 0.0f)));
+	static_assert(!noexcept(storage.set(0_row, 0_col, 0.0f)));
 }
 
 } // anonymous namespace

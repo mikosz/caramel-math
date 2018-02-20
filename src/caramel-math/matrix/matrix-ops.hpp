@@ -27,9 +27,10 @@ inline auto determinant(const Matrix<StorageType>& matrix) noexcept {
 
 	if constexpr (MatrixType::ROWS > 1) {
 		auto result = MatrixType::Scalar(0);
-		for (size_t columnIndex = 0; columnIndex < MatrixType::COLUMNS; ++columnIndex) {
-			const auto absElement = matrix.get(0, columnIndex) * determinant(viewSubmatrix(matrix, 0, columnIndex));
-			if (columnIndex % 2 == 0) {
+		for (auto columnIndex = Column(0); columnIndex.value() < MatrixType::COLUMNS; ++columnIndex) {
+			const auto absElement =
+				matrix.get(Row(0), columnIndex) * determinant(viewSubmatrix(matrix, Row(0), columnIndex));
+			if (columnIndex % 2 == Column(0)) {
 				result += absElement;
 			} else {
 				result -= absElement;
@@ -37,14 +38,14 @@ inline auto determinant(const Matrix<StorageType>& matrix) noexcept {
 		}
 		return result;
 	} else {
-		return matrix.get(0, 0);
+		return matrix.get(Row(0), Column(0));
 	}
 }
 
 template <class StorageType>
-inline auto cofactor(const Matrix<StorageType>& matrix, size_t rowIndex, size_t columnIndex) noexcept {
+inline auto cofactor(const Matrix<StorageType>& matrix, Row rowIndex, Column columnIndex) noexcept {
 	const auto det = determinant(viewSubmatrix(matrix, rowIndex, columnIndex));
-	return ((rowIndex + columnIndex) % 2 == 0) ? det : -det;
+	return ((rowIndex.value() + columnIndex.value()) % 2 == 0) ? det : -det;
 }
 
 template <class StorageType>
@@ -62,9 +63,13 @@ inline auto inverse(const Matrix<StorageType>& matrix) noexcept /* TODO: not rea
 
 		result = EffectiveStorageType<MatrixType>();
 
-		for (size_t rowIndex = 0; rowIndex < MatrixType::ROWS; ++rowIndex) {
-			for (size_t columnIndex = 0; columnIndex < MatrixType::COLUMNS; ++columnIndex) {
-				result->set(rowIndex, columnIndex, detInverse * cofactor(matrix, columnIndex, rowIndex));
+		for (auto rowIndex = Row(0); rowIndex.value() < MatrixType::ROWS; ++rowIndex) {
+			for (auto columnIndex = Column(0); columnIndex.value() < MatrixType::COLUMNS; ++columnIndex) {
+				result->set(
+					rowIndex,
+					columnIndex,
+					detInverse * cofactor(matrix, Row(columnIndex.value()), Column(rowIndex.value()))
+					);
 			}
 		}
 	}
