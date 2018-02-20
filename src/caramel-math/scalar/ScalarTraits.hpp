@@ -1,11 +1,11 @@
-#ifndef CARAMELMATH_SCALARTRAITS_HPP__
-#define CARAMELMATH_SCALARTRAITS_HPP__
+#ifndef CARAMELMATH_SCALAR_SCALARTRAITS_HPP__
+#define CARAMELMATH_SCALAR_SCALARTRAITS_HPP__
 
 #include <cmath>
 
-#include "setup.hpp"
+#include "../setup.hpp"
 
-namespace caramel_math {
+namespace caramel_math::scalar {
 
 template <class T>
 struct BasicScalarTraits {
@@ -30,6 +30,6 @@ struct BasicScalarTraits<float> {
 	}
 };
 
-} // namespace caramel_math
+} // namespace caramel_math::scalar
 
-#endif /* CARAMELMATH_SCALARTRAITS_HPP__ */
+#endif /* CARAMELMATH_SCALAR_SCALARTRAITS_HPP__ */

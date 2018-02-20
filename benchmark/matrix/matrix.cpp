@@ -7,7 +7,7 @@
 #include "caramel-math/matrix/SimdStorage.hpp"
 #include "caramel-math/matrix/Matrix.hpp"
 #include "caramel-math/matrix/matrix-ops.hpp"
-#include "caramel-math/ScalarTraits.hpp"
+#include "caramel-math/scalar/ScalarTraits.hpp"
 
 using namespace caramel_math;
 using namespace caramel_math::matrix;
@@ -15,10 +15,10 @@ using namespace caramel_math::matrix::literals;
 
 namespace /* anonymous */ {
 
-using ArrayNoexcept = ArrayStorage<BasicScalarTraits<float>, 4, 4, AssertErrorHandler>;
-using ArrayThrowing = ArrayStorage<BasicScalarTraits<float>, 4, 4, ThrowingErrorHandler>;
-using SimdNoexcept = SimdStorage<BasicScalarTraits<float>, AssertErrorHandler>;
-using SimdThrowing = SimdStorage<BasicScalarTraits<float>, ThrowingErrorHandler>;
+using ArrayNoexcept = ArrayStorage<scalar::BasicScalarTraits<float>, 4, 4, AssertErrorHandler>;
+using ArrayThrowing = ArrayStorage<scalar::BasicScalarTraits<float>, 4, 4, ThrowingErrorHandler>;
+using SimdNoexcept = SimdStorage<scalar::BasicScalarTraits<float>, AssertErrorHandler>;
+using SimdThrowing = SimdStorage<scalar::BasicScalarTraits<float>, ThrowingErrorHandler>;
 
 template <class StorageType>
 void benchmarkMatrixMultiplication(benchmark::State& state) {

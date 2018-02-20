@@ -7,10 +7,11 @@
 #include "caramel-math/matrix/AffineTransformStorage.hpp"
 #include "caramel-math/matrix/AssertErrorHandler.hpp"
 #include "caramel-math/matrix/ThrowingErrorHandler.hpp"
-#include "caramel-math/ScalarTraits.hpp"
+#include "caramel-math/scalar/ScalarTraits.hpp"
 
 using namespace caramel_math;
 using namespace caramel_math::matrix;
+using namespace caramel_math::scalar;
 using namespace caramel_math::matrix::literals;
 
 namespace /* anonymous */ {

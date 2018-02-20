@@ -6,9 +6,10 @@
 #include "caramel-math/matrix/ViewStorage.hpp"
 #include "caramel-math/matrix/ArrayStorage.hpp"
 #include "caramel-math/matrix/AssertErrorHandler.hpp"
-#include "caramel-math/ScalarTraits.hpp"
+#include "caramel-math/scalar/ScalarTraits.hpp"
 
 using namespace caramel_math;
+using namespace caramel_math::scalar;
 using namespace caramel_math::matrix;
 
 namespace /* anonymous */ {

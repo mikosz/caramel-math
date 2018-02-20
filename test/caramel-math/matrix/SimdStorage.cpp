@@ -5,11 +5,12 @@
 #include "caramel-math/matrix/SimdStorage.hpp"
 #include "caramel-math/matrix/Matrix.hpp"
 #include "caramel-math/matrix/matrix-ops.hpp"
-#include "caramel-math/ScalarTraits.hpp"
+#include "caramel-math/scalar/ScalarTraits.hpp"
 #include "MockErrorHandler.hpp"
 
 using namespace caramel_math;
 using namespace caramel_math::matrix;
+using namespace caramel_math::scalar;
 using namespace caramel_math::matrix::literals;
 using namespace caramel_math::matrix::test;
 

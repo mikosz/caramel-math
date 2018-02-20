@@ -2,11 +2,12 @@
 #include <gmock/gmock.h>
 
 #include "caramel-math/matrix/ArrayStorage.hpp"
-#include "caramel-math/ScalarTraits.hpp"
+#include "caramel-math/scalar/ScalarTraits.hpp"
 #include "MockErrorHandler.hpp"
 
 using namespace caramel_math;
 using namespace caramel_math::matrix;
+using namespace caramel_math::scalar;
 using namespace caramel_math::matrix::literals;
 using namespace caramel_math::matrix::test;
 
