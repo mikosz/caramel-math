@@ -16,6 +16,119 @@ using namespace caramel_math::matrix::literals;
 
 namespace /* anonymous */ {
 
+template <class StorageType>
+struct IsAffineStorage {
+	enum { VALUE = false };
+};
+
+template <class ScalarTraits, class ErrorHandler>
+struct IsAffineStorage<AffineTransformStorage<ScalarTraits, ErrorHandler>> {
+	enum { VALUE = true };
+};
+
+template <class StorageType>
+constexpr auto IsAffineStorageV = IsAffineStorage<StorageType>::VALUE;
+
+template <class StorageType>
+class ConcreteStorageTest : public testing::Test {
+public:
+	static constexpr auto MUTABLE_ROWS = IsAffineStorageV<StorageType> ? 3 : StorageType::ROWS;
+	static constexpr auto MUTABLE_COLUMNS = IsAffineStorageV<StorageType> ? 3 : StorageType::COLUMNS;
+};
+
+using ConcreteStorageTypes = testing::Types<
+	ArrayStorage<BasicScalarTraits<float>, 2, 3, ThrowingErrorHandler>,
+	ArrayStorage<BasicScalarTraits<float>, 2, 3, AssertErrorHandler>,
+	AffineTransformStorage<BasicScalarTraits<float>, ThrowingErrorHandler>,
+	AffineTransformStorage<BasicScalarTraits<float>, AssertErrorHandler>,
+	SimdStorage<BasicScalarTraits<float>, ThrowingErrorHandler>,
+	SimdStorage<BasicScalarTraits<float>, AssertErrorHandler>
+	>;
+
+TYPED_TEST_CASE(ConcreteStorageTest, ConcreteStorageTypes);
+
+TYPED_TEST(ConcreteStorageTest, MatricesHaveCopySemantics) {
+	using MatrixType = Matrix<TypeParam>;
+
+	auto source = MatrixType();
+
+	for (auto row = 0_row; row.value() < TestFixture::MUTABLE_ROWS; ++row) {
+		for (auto column = 0_col; column.value() < TestFixture::MUTABLE_COLUMNS; ++column) {
+			source.set(row, column, static_cast<float>(row.value() * 10 + column.value()));
+		}
+	}
+
+	auto copyConstructorTarget = source;
+
+	EXPECT_EQ(source, copyConstructorTarget);
+
+	auto copyAssignmentTarget = MatrixType();
+	copyAssignmentTarget = source;
+
+	EXPECT_EQ(source, copyAssignmentTarget);
+}
+
+TYPED_TEST(ConcreteStorageTest, MatricesAreEqualityComparable) {
+	using MatrixType = Matrix<TypeParam>;
+
+	auto lhs = MatrixType();
+	auto rhs = MatrixType();
+
+	for (auto row = 0_row; row.value() < TestFixture::MUTABLE_ROWS; ++row) {
+		for (auto column = 0_col; column.value() < TestFixture::MUTABLE_COLUMNS; ++column) {
+			lhs.set(row, column, static_cast<float>(row.value() * 10 + column.value()));
+			rhs.set(row, column, static_cast<float>(row.value() * 10 + column.value()));
+		}
+	}
+
+	EXPECT_EQ(lhs, rhs);
+
+	rhs.set(1_row, 2_col, 0.0f);
+
+	EXPECT_NE(lhs, rhs);
+}
+
+TYPED_TEST(ConcreteStorageTest, IdentityMatrixHasOnesOnDiagonal) {
+	using MatrixType = Matrix<TypeParam>;
+
+	const auto identity = MatrixType::IDENTITY;
+
+	for (auto row = 0_row; row.value() < TypeParam::ROWS; ++row) {
+		for (auto column = 0_col; column.value() < TypeParam::COLUMNS; ++column) {
+			const auto value = identity.get(row, column);
+			if (row.value() == column.value()) {
+				EXPECT_EQ(value, 1.0f);
+			} else {
+				EXPECT_EQ(value, 0.0f);
+			}
+		}
+	}
+}
+
+TYPED_TEST(ConcreteStorageTest, GetAndSetHandleErrorsAppropriately) {
+	using MatrixType = Matrix<TypeParam>;
+
+	auto matrix = MatrixType();
+
+	if constexpr (std::is_same_v<typename TypeParam::ErrorHandler, ThrowingErrorHandler>) {
+		static_assert(!noexcept(matrix.get(0_row, 0_col)));
+		static_assert(!noexcept(matrix.set(0_row, 0_col, 0.0f)));
+		EXPECT_THROW(matrix.get(Row(MatrixType::ROWS), 0_col), InvalidMatrixDataAccess);
+		EXPECT_THROW(matrix.get(0_row, Column(MatrixType::COLUMNS)), InvalidMatrixDataAccess);
+		EXPECT_THROW(matrix.set(Row(MatrixType::ROWS), 0_col, 0.0f), InvalidMatrixDataAccess);
+		EXPECT_THROW(matrix.set(0_row, Column(MatrixType::COLUMNS), 0.0f), InvalidMatrixDataAccess);
+	} else {
+		static_assert(noexcept(matrix.get(0_row, 0_col)));
+		static_assert(noexcept(matrix.set(0_row, 0_col, 0.0f)));
+		EXPECT_DEATH(matrix.get(Row(MatrixType::ROWS), 0_col), "Invalid matrix data access");
+		EXPECT_DEATH(matrix.get(0_row, Column(MatrixType::COLUMNS)), "Invalid matrix data access");
+		EXPECT_DEATH(matrix.set(Row(MatrixType::ROWS), 0_col, 0.0f), "Invalid matrix data access");
+		EXPECT_DEATH(matrix.set(0_row, Column(MatrixType::COLUMNS), 0.0f), "Invalid matrix data access");
+	}
+}
+
+// --- old test
+
 template <size_t ROWS_VALUE, size_t COLUMNS_VALUE>
 struct TestStorage {
 	using ScalarTraits = BasicScalarTraits<float>;
@@ -101,25 +214,6 @@ private:
 class MatrixTest : public MatrixStorageFixture {
 };
 
-TEST_F(MatrixTest, MatricesAreCopyableAndCopyAssignable) {
-	auto source = Matrix<ArrayStorage<BasicScalarTraits<int>, 3, 2, AssertErrorHandler>>(
-		0, 1,
-		2, 3,
-		4, 5
-		);
-	auto target = source;
-
-	EXPECT_EQ(source, target);
-
-	source.set(0_row, 1_col, 42);
-
-	EXPECT_NE(source, target);
-
-	target = source;
-
-	EXPECT_EQ(source, target);
-}
-
 TEST_F(MatrixTest, MatricesAreConvertibleToCompatibleMatrices) {
 	auto source = Matrix<AffineTransformStorage<BasicScalarTraits<int>, AssertErrorHandler>>(
 		0, 1, 2, 3,
@@ -150,87 +244,6 @@ TEST_F(MatrixTest, ZeroMatrixHasZeroesEverywhere) {
 	EXPECT_EQ(zero.get(1_row, 1_col), 0);
 	EXPECT_EQ(zero.get(2_row, 0_col), 0);
 	EXPECT_EQ(zero.get(2_row, 1_col), 0);
-}
-
-TEST_F(MatrixTest, IdentityMatrixHasOnesOnDiagonal) {
-	using Matrix = Matrix<ArrayStorage<BasicScalarTraits<int>, 3, 2, AssertErrorHandler>>;
-
-	const auto zero = Matrix::IDENTITY;
-
-	EXPECT_EQ(zero.get(0_row, 0_col), 1);
-	EXPECT_EQ(zero.get(0_row, 1_col), 0);
-	EXPECT_EQ(zero.get(1_row, 0_col), 0);
-	EXPECT_EQ(zero.get(1_row, 1_col), 1);
-	EXPECT_EQ(zero.get(2_row, 0_col), 0);
-	EXPECT_EQ(zero.get(2_row, 1_col), 0);
-}
-
-TEST_F(MatrixTest, GetCallsStorageGet) {
-	auto matrix = Matrix<MockStorageProxy>();
-
-	{
-		const auto f = 42.0f;
-		EXPECT_CALL(*MockStorage::instance, get(0_row, 1_col)).Times(2).WillRepeatedly(testing::Return(f));
-		EXPECT_EQ(f, matrix.get(0_row, 1_col));
-		EXPECT_EQ(f, matrix.get(1_col, 0_row));
-	}
-
-	{
-		const auto f = 42.0f;
-		EXPECT_CALL(*MockStorage::instance, get(0_row, 1_col)).Times(2).WillRepeatedly(testing::Return(f));
-
-		const auto& constMatrix = matrix;
-		EXPECT_EQ(f, constMatrix.get(0_row, 1_col));
-		EXPECT_EQ(f, constMatrix.get(1_col, 0_row));
-	}
-}
-
-TEST_F(MatrixTest, SetCallsStorageSet) {
-	auto matrix = Matrix<MockStorageProxy>();
-
-	const auto f = 42.0f;
-	EXPECT_CALL(*MockStorage::instance, set(0_row, 1_col, f)).Times(2);
-	matrix.set(0_row, 1_col, f);
-	matrix.set(1_col, 0_row, f);
-}
-
-TEST_F(MatrixTest, MatrixConstantsDeriveFromStorage) {
-	using MatrixType = Matrix<NoexceptStorage<12, 34>>;
-	static_assert(std::is_same_v<MatrixType::Scalar, float>);
-	static_assert(MatrixType::ROWS == 12);
-	static_assert(MatrixType::COLUMNS == 34);
-}
-
-TEST_F(MatrixTest, GetIsNoexceptIfStorageGetIsNoexcept) {
-	auto matrix = Matrix<NoexceptStorage<12, 34>>();
-	static_assert(noexcept(matrix.get(0_row, 0_col)));
-	static_assert(noexcept(matrix.get(0_col, 0_row)));
-
-	const auto& constMatrix = matrix;
-	static_assert(noexcept(constMatrix.get(0_row, 0_col)));
-	static_assert(noexcept(constMatrix.get(0_col, 0_row)));
-}
-
-TEST_F(MatrixTest, GetIsPotentiallyThrowingIfStorageGetIsPotentiallyThrowing) {
-	auto matrix = Matrix<PotentiallyThrowingStorage<12, 34>>();
-	static_assert(!noexcept(matrix.get(0_row, 0_col)));
-	static_assert(!noexcept(matrix.get(0_col, 0_row)));
-
-	const auto& constMatrix = matrix;
-	static_assert(!noexcept(constMatrix.get(0_row, 0_col)));
-	static_assert(!noexcept(constMatrix.get(0_col, 0_row)));
-}
-
-TEST_F(MatrixTest, SetIsNoexceptIfStorageSetIsNoexcept) {
-	auto matrix = Matrix<NoexceptStorage<12, 34>>();
-	static_assert(noexcept(matrix.set(0_row, 0_col, 0.0f)));
-	static_assert(noexcept(matrix.set(0_col, 0_row, 0.0f)));
-}
-
-TEST_F(MatrixTest, SetIsPotentiallyThrowingIfStorageSetIsPotentiallyThrowing) {
-	auto matrix = Matrix<PotentiallyThrowingStorage<12, 34>>();
-	static_assert(!noexcept(matrix.set(0_row, 0_col, 0.0f)));
-	static_assert(!noexcept(matrix.set(0_col, 0_row, 0.0f)));
 }
 
 TEST_F(MatrixTest, MatrixMultiplicationWorks) {
