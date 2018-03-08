@@ -70,6 +70,22 @@ private:
 
 namespace detail {
 
+struct IdentityModifierFunc {
+
+	static constexpr size_t rows(size_t rows, [[maybe_unused]] size_t columns) noexcept {
+		return rows;
+	}
+
+	static constexpr size_t columns([[maybe_unused]] size_t rows, size_t columns) noexcept {
+		return columns;
+	}
+
+	std::tuple<Row, Column> operator()(Row row, Column column) const noexcept {
+		return { row, column };
+	}
+
+};
+
 struct TransposedModifierFunc {
 
 	static constexpr size_t rows([[maybe_unused]] size_t rows, size_t columns) noexcept {
@@ -121,6 +137,14 @@ private:
 };
 
 } // namespace detail
+
+template <class ViewedMatrixType>
+using IdentityViewStorage = ViewStorage<ViewedMatrixType, detail::IdentityModifierFunc>;
+
+template <class ViewedMatrixType>
+inline auto view(ViewedMatrixType& matrix) noexcept {
+	return Matrix<IdentityViewStorage<ViewedMatrixType>>(matrix);
+}
 
 template <class ViewedMatrixType>
 using TransposedViewStorage = ViewStorage<ViewedMatrixType, detail::TransposedModifierFunc>;

@@ -16,6 +16,54 @@ using namespace caramel_math::matrix::literals;
 
 namespace /* anonymous */ {
 
+struct MockStorage {
+
+	static MockStorage* instance;
+
+	MOCK_CONST_METHOD2(get, float (Row, Column));
+
+	MOCK_METHOD3(set, void (Row, Column, float));
+
+};
+
+MockStorage* MockStorage::instance = nullptr;
+
+template <size_t ROWS_PARAM, size_t COLUMNS_PARAM>
+struct MockStorageProxy {
+
+	using Scalar = float;
+	using GetReturnType = Scalar;
+	static constexpr auto ROWS = ROWS_PARAM;
+	static constexpr auto COLUMNS = COLUMNS_PARAM;
+
+	float get(Row row, Column column) const {
+		return MockStorage::instance->get(row, column);
+	}
+
+	void set(Row row, Column column, float value) {
+		return MockStorage::instance->set(row, column, value);
+	}
+
+};
+
+class MockStorageFixture {
+public:
+
+	MockStorageFixture()
+	{
+		MockStorage::instance = &storage_;
+	}
+
+	~MockStorageFixture() {
+		MockStorage::instance = nullptr;
+	}
+
+private:
+
+	MockStorage storage_;
+
+};
+
 template <class StorageType>
 struct IsAffineStorage {
 	enum { VALUE = false };
@@ -29,11 +77,11 @@ struct IsAffineStorage<AffineTransformStorage<ScalarTraits, ErrorHandler>> {
 template <class StorageType>
 constexpr auto IsAffineStorageV = IsAffineStorage<StorageType>::VALUE;
 
+// Family of tests for concrete storages (all storages except for views)
 template <class StorageType>
 class ConcreteStorageTest : public testing::Test {
 public:
 	static constexpr auto MUTABLE_ROWS = IsAffineStorageV<StorageType> ? 3 : StorageType::ROWS;
-	static constexpr auto MUTABLE_COLUMNS = IsAffineStorageV<StorageType> ? 3 : StorageType::COLUMNS;
 };
 
 using ConcreteStorageTypes = testing::Types<
@@ -47,13 +95,27 @@ using ConcreteStorageTypes = testing::Types<
 
 TYPED_TEST_CASE(ConcreteStorageTest, ConcreteStorageTypes);
 
+// Family of tests for storages storing any value (all concrete storages except for affine transforms)
+template <class StorageType>
+class AnyValueStorageTest : public testing::Test {
+};
+
+using AnyValueStorageTypes = testing::Types<
+	ArrayStorage<BasicScalarTraits<float>, 2, 3, ThrowingErrorHandler>,
+	ArrayStorage<BasicScalarTraits<float>, 2, 3, AssertErrorHandler>,
+	SimdStorage<BasicScalarTraits<float>, ThrowingErrorHandler>,
+	SimdStorage<BasicScalarTraits<float>, AssertErrorHandler>
+	>;
+
+TYPED_TEST_CASE(AnyValueStorageTest, AnyValueStorageTypes);
+
 TYPED_TEST(ConcreteStorageTest, MatricesHaveCopySemantics) {
 	using MatrixType = Matrix<TypeParam>;
 
 	auto source = MatrixType();
 
 	for (auto row = 0_row; row.value() < TestFixture::MUTABLE_ROWS; ++row) {
-		for (auto column = 0_col; column.value() < TestFixture::MUTABLE_COLUMNS; ++column) {
+		for (auto column = 0_col; column.value() < MatrixType::COLUMNS; ++column) {
 			source.set(row, column, static_cast<float>(row.value() * 10 + column.value()));
 		}
 	}
@@ -75,7 +137,7 @@ TYPED_TEST(ConcreteStorageTest, MatricesAreEqualityComparable) {
 	auto rhs = MatrixType();
 
 	for (auto row = 0_row; row.value() < TestFixture::MUTABLE_ROWS; ++row) {
-		for (auto column = 0_col; column.value() < TestFixture::MUTABLE_COLUMNS; ++column) {
+		for (auto column = 0_col; column.value() < MatrixType::COLUMNS; ++column) {
 			lhs.set(row, column, static_cast<float>(row.value() * 10 + column.value()));
 			rhs.set(row, column, static_cast<float>(row.value() * 10 + column.value()));
 		}
@@ -105,6 +167,18 @@ TYPED_TEST(ConcreteStorageTest, IdentityMatrixHasOnesOnDiagonal) {
 	}
 }
 
+TYPED_TEST(AnyValueStorageTest, ZeroMatrixHasZeroesEverywhere) {
+	using MatrixType = Matrix<TypeParam>;
+
+	const auto zero = MatrixType::ZERO;
+
+	for (auto row = 0_row; row.value() < TypeParam::ROWS; ++row) {
+		for (auto column = 0_col; column.value() < TypeParam::COLUMNS; ++column) {
+			EXPECT_EQ(zero.get(row, column), 0);
+		}
+	}
+}
+
 TYPED_TEST(ConcreteStorageTest, GetAndSetHandleErrorsAppropriately) {
 	using MatrixType = Matrix<TypeParam>;
 
@@ -127,7 +201,63 @@ TYPED_TEST(ConcreteStorageTest, GetAndSetHandleErrorsAppropriately) {
 	}
 }
 
+TYPED_TEST(ConcreteStorageTest, MatricesAreConvertibleToCompatibleMatrices) {
+	using MatrixType = Matrix<TypeParam>;
+
+	MockStorageFixture scopedFixture{};
+
+	auto valueMaker = [](const auto row, const auto column) {
+			if (row.value() < TestFixture::MUTABLE_ROWS) {
+				return row.value() * 10.0f + column.value();
+			} else if (column.value() < MatrixType::COLUMNS - 1) {
+				return 0.0f;
+			} else {
+				return 1.0f;
+			}
+		};
+
+	for (auto row = 0_row; row.value() < MatrixType::ROWS; ++row) {
+		for (auto column = 0_col; column.value() < MatrixType::COLUMNS; ++column) {
+			EXPECT_CALL(*MockStorage::instance, get(row, column))
+				.WillRepeatedly(testing::Return(valueMaker(row, column)))
+				;
+		}
+	}
+
+	auto source = Matrix<MockStorageProxy<MatrixType::ROWS, MatrixType::COLUMNS>>();
+
+	const auto constructedTarget = MatrixType(source);
+
+	auto assignedTarget = MatrixType();
+	assignedTarget = source;
+
+	for (auto row = 0_row; row.value() < MatrixType::ROWS; ++row) {
+		for (auto column = 0_col; column.value() < MatrixType::COLUMNS; ++column) {
+			EXPECT_FLOAT_EQ(constructedTarget.get(row, column), valueMaker(row, column));
+			EXPECT_FLOAT_EQ(assignedTarget.get(row, column), valueMaker(row, column));
+		}
+	}
+}
+
 // --- old test
+
+class MatrixStorageFixture : public testing::Test {
+public:
+
+	MatrixStorageFixture()
+	{
+		MockStorage::instance = &storage_;
+	}
+
+	~MatrixStorageFixture() {
+		MockStorage::instance = nullptr;
+	}
+
+private:
+
+	MockStorage storage_;
+
+};
 
 template <size_t ROWS_VALUE, size_t COLUMNS_VALUE>
 struct TestStorage {
@@ -164,87 +294,8 @@ struct PotentiallyThrowingStorage : TestStorage<ROWS_VALUE, COLUMNS_VALUE> {
 
 };
 
-struct MockStorage {
-
-	static MockStorage* instance;
-
-	MOCK_CONST_METHOD2(get, float (Row, Column));
-
-	MOCK_METHOD3(set, void (Row, Column, float));
-
-};
-
-MockStorage* MockStorage::instance = nullptr;
-
-struct MockStorageProxy {
-
-	using Scalar = float;
-	using GetReturnType = Scalar;
-	static constexpr auto ROWS = 1;
-	static constexpr auto COLUMNS = 2;
-
-	float get(Row row, Column column) const {
-		return MockStorage::instance->get(row, column);
-	}
-
-	void set(Row row, Column column, float value) {
-		return MockStorage::instance->set(row, column, value);
-	}
-
-};
-
-class MatrixStorageFixture : public testing::Test {
-public:
-
-	MatrixStorageFixture()
-	{
-		MockStorage::instance = &storage_;
-	}
-
-	~MatrixStorageFixture() {
-		MockStorage::instance = nullptr;
-	}
-
-private:
-
-	MockStorage storage_;
-
-};
-
 class MatrixTest : public MatrixStorageFixture {
 };
-
-TEST_F(MatrixTest, MatricesAreConvertibleToCompatibleMatrices) {
-	auto source = Matrix<AffineTransformStorage<BasicScalarTraits<int>, AssertErrorHandler>>(
-		0, 1, 2, 3,
-		4, 5, 6, 7,
-		8, 9, 10, 10
-		);
-	auto target = Matrix<ArrayStorage<BasicScalarTraits<int>, 4, 4, AssertErrorHandler>>(source);
-
-	EXPECT_EQ(source, target);
-
-	source.set(0_row, 1_col, 42);
-
-	EXPECT_NE(source, target);
-
-	target = source;
-
-	EXPECT_EQ(source, target);
-}
-
-TEST_F(MatrixTest, ZeroMatrixHasZeroesEverywhere) {
-	using Matrix = Matrix<ArrayStorage<BasicScalarTraits<int>, 3, 2, AssertErrorHandler>>;
-
-	const auto zero = Matrix::ZERO;
-
-	EXPECT_EQ(zero.get(0_row, 0_col), 0);
-	EXPECT_EQ(zero.get(0_row, 1_col), 0);
-	EXPECT_EQ(zero.get(1_row, 0_col), 0);
-	EXPECT_EQ(zero.get(1_row, 1_col), 0);
-	EXPECT_EQ(zero.get(2_row, 0_col), 0);
-	EXPECT_EQ(zero.get(2_row, 1_col), 0);
-}
 
 TEST_F(MatrixTest, MatrixMultiplicationWorks) {
 	auto matrix2x2 = Matrix<ArrayStorage<BasicScalarTraits<int>, 2, 2, ThrowingErrorHandler>>();
