@@ -115,6 +115,7 @@ inline auto& operator*=(
 	const Matrix<RHSStorageType>& rhs
 	) noexcept(noexcept(lhs * rhs))
 {
+	static_assert(LHSStorageType::COLUMNS == RHSStorageType::COLUMNS, "Incompatible matrix sizes for assign-multiplication");
 	lhs = lhs * rhs;
 	return lhs;
 }
@@ -211,12 +212,15 @@ inline std::ostream& operator<<(std::ostream& os, const Matrix<StorageType>& mat
 // -- free functions
 
 template <class StorageType>
-inline [[nodiscard]] auto transposed(const Matrix<StorageType>& matrix) {
+inline [[nodiscard]] auto transposed(const Matrix<StorageType>& matrix) noexcept {
 	return Matrix<TransposedStorageType<StorageType>>(viewTransposed(matrix));
 }
 
 template <class ViewedMatrixType>
-inline [[nodiscard]] const auto& transposed(const Matrix<TransposedViewStorage<ViewedMatrixType>>& transposedMatrixView) {
+inline [[nodiscard]] const auto& transposed(
+	const Matrix<TransposedViewStorage<ViewedMatrixType>>& transposedMatrixView
+	) noexcept
+{
 	return transposedMatrixView.storage().viewedMatrix();
 }
 
