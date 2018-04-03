@@ -4,7 +4,7 @@
 #include <cassert>
 #include <type_traits>
 
-#include "Matrix.hpp"
+#include "matrix-coordinates.hpp"
 
 namespace caramel_math::matrix {
 
