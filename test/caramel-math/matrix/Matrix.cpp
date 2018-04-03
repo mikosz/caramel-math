@@ -487,91 +487,40 @@ TEST(MatrixTest, TransposedYieldsOriginalMatrixForTransposedViewMatrix) {
 	EXPECT_EQ(&ttv, &m);
 }
 
-// --- old test
-
-class MatrixStorageFixture : public testing::Test {
-public:
-
-	MatrixStorageFixture()
-	{
-		MockStorage::instance = &storage_;
-	}
-
-	~MatrixStorageFixture() {
-		MockStorage::instance = nullptr;
-	}
-
-private:
-
-	MockStorage storage_;
-
-};
-
-template <size_t ROWS_VALUE, size_t COLUMNS_VALUE>
-struct TestStorage {
-	using ScalarTraits = BasicScalarTraits<float>;
-	using Scalar = typename ScalarTraits::Scalar;
-	using GetReturnType = Scalar;
-	static constexpr auto ROWS = ROWS_VALUE;
-	static constexpr auto COLUMNS = COLUMNS_VALUE;
-};
-
-template <size_t ROWS_VALUE, size_t COLUMNS_VALUE>
-struct NoexceptStorage : TestStorage<ROWS_VALUE, COLUMNS_VALUE> {
-
-	float get(Row, Column) const noexcept {
-		static auto f = 0.0f;
-		return f;
-	}
-
-	void set(Row, Column, float) noexcept {
-	}
-
-};
-
-template <size_t ROWS_VALUE, size_t COLUMNS_VALUE>
-struct PotentiallyThrowingStorage : TestStorage<ROWS_VALUE, COLUMNS_VALUE> {
-
-	float get(Row, Column) const {
-		static auto f = 0.0f;
-		return f;
-	}
-
-	void set(Row, Column, float) {
-	}
-
-};
-
-class OldMatrixTest : public MatrixStorageFixture {
-};
-
-TEST_F(OldMatrixTest, DeterminantYieldsMatrixDeterminant) {
+TEST(MatrixTest, DeterminantYieldsMatrixDeterminant) {
 	using Matrix = Matrix<ArrayStorage<BasicScalarTraits<int>, 3, 3, ThrowingErrorHandler>>;
 	const auto m = Matrix(
 		-1, 1, 2,
 		-2, 3, -3,
 		4, -4, 5
-	);
+		);
 
 	EXPECT_EQ(determinant(m), -13);
 }
 
-TEST_F(OldMatrixTest, InverseYieldsMatrixInverse) {
+TEST(MatrixTest, InverseYieldsMatrixInverse) {
 	using Matrix = Matrix<ArrayStorage<BasicScalarTraits<float>, 3, 3, ThrowingErrorHandler>>;
 	const auto m = Matrix(
 		-1.0f, 1.0f, 2.0f,
 		-2.0f, 3.0f, -3.0f,
 		4.0f, -4.0f, 5.0f
-	);
+		);
 
 	const auto i = inverse(m);
 
 	ASSERT_TRUE(i);
 	EXPECT_FLOAT_EQ(i->get(0_row, 0_col), -3.0f / 13.0f);
-	// TODO: ...
+	EXPECT_FLOAT_EQ(i->get(0_row, 1_col), 1.0f);
+	EXPECT_FLOAT_EQ(i->get(0_row, 2_col), 9.0f / 13.0f);
+	EXPECT_FLOAT_EQ(i->get(1_row, 0_col), 2.0f / 13.0f);
+	EXPECT_FLOAT_EQ(i->get(1_row, 1_col), 1.0f);
+	EXPECT_FLOAT_EQ(i->get(1_row, 2_col), 7.0f / 13.0f);
+	EXPECT_FLOAT_EQ(i->get(2_row, 0_col), 4.0f / 13.0f);
+	EXPECT_FLOAT_EQ(i->get(2_row, 1_col), 0.0f);
+	EXPECT_FLOAT_EQ(i->get(2_row, 2_col), 1.0f / 13.0f);
 }
 
-TEST_F(OldMatrixTest, InverseAffineTransformYieldsMatrixInverse) {
+TEST(MatrixTest, InverseAffineTransformYieldsMatrixInverse) {
 	using Matrix = Matrix<AffineTransformStorage<BasicScalarTraits<float>, ThrowingErrorHandler>>;
 	auto m = Matrix::IDENTITY;
 
@@ -597,6 +546,18 @@ TEST_F(OldMatrixTest, InverseAffineTransformYieldsMatrixInverse) {
 	EXPECT_FLOAT_EQ(i->get(2_row, 1_col), 0.0f);
 	EXPECT_FLOAT_EQ(i->get(2_row, 2_col), 1.0f);
 	EXPECT_FLOAT_EQ(i->get(2_row, 3_col), -3.0f);
+}
+
+TEST(MatrixTest, InverseYieldsEmptyOptionalForNonInvertibleMatrices) {
+	using Matrix = Matrix<ArrayStorage<BasicScalarTraits<float>, 2, 2, ThrowingErrorHandler>>;
+	const auto m = Matrix(
+		-1.0f, 1.0f,
+		2.0f, -2.0f
+		);
+
+	const auto i = inverse(m);
+
+	ASSERT_FALSE(i);
 }
 
 } // anonymous namespace
