@@ -1,4 +1,4 @@
-#include "MockErrorHandler.hpp"
+#include "MatrixMockErrorHandler.hpp"
 
 using namespace caramel_math::matrix::test;
 

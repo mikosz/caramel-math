@@ -3,7 +3,7 @@
 
 #include "caramel-math/matrix/ArrayStorage.hpp"
 #include "caramel-math/scalar/ScalarTraits.hpp"
-#include "MockErrorHandler.hpp"
+#include "MatrixMockErrorHandler.hpp"
 
 using namespace caramel_math;
 using namespace caramel_math::matrix;
@@ -13,14 +13,14 @@ using namespace caramel_math::matrix::test;
 
 namespace /* anonymous */ {
 
-class ArrayStorageTest : public MockErrorHandlerFixtureTest {
+class MatrixArrayStorageTest : public MockErrorHandlerFixtureTest {
 };
 
-TEST_F(ArrayStorageTest, IsDefaultConstructible) {
+TEST_F(MatrixArrayStorageTest, IsDefaultConstructible) {
 	auto storage = ArrayStorage<BasicScalarTraits<int>, 1, 2, MockErrorHandlerProxy>();
 }
 
-TEST_F(ArrayStorageTest, IsConstructibleWithListOfValues) {
+TEST_F(MatrixArrayStorageTest, IsConstructibleWithListOfValues) {
 	using Storage = ArrayStorage<BasicScalarTraits<int>, 2, 3, MockErrorHandlerProxy>;
 	auto storage = Storage(
 		0, 1, 2,
@@ -35,7 +35,7 @@ TEST_F(ArrayStorageTest, IsConstructibleWithListOfValues) {
 	EXPECT_EQ(storage.get(1_row, 2_col), 5);
 }
 
-TEST_F(ArrayStorageTest, ArrayStorageIsCopyable) {
+TEST_F(MatrixArrayStorageTest, ArrayStorageIsCopyable) {
 	using Storage = ArrayStorage<BasicScalarTraits<int>, 2, 3, MockErrorHandlerProxy>;
 	auto storage = Storage(
 		0, 1, 2,
@@ -51,7 +51,7 @@ TEST_F(ArrayStorageTest, ArrayStorageIsCopyable) {
 	EXPECT_EQ(copy.get(1_row, 2_col), 5);
 }
 
-TEST_F(ArrayStorageTest, GetAndSetReturnAndUpdateStoredValue) {
+TEST_F(MatrixArrayStorageTest, GetAndSetReturnAndUpdateStoredValue) {
 	auto storage = ArrayStorage<BasicScalarTraits<int>, 1, 2, MockErrorHandlerProxy>();
 	storage.set(0_row, 0_col, 42);
 	storage.set(0_row, 1_col, 666);
@@ -60,7 +60,7 @@ TEST_F(ArrayStorageTest, GetAndSetReturnAndUpdateStoredValue) {
 	EXPECT_EQ(storage.get(0_row, 1_col), 666);
 }
 
-TEST_F(ArrayStorageTest, GetWithOutOfBoundsIndexCallsErrorHandler) {
+TEST_F(MatrixArrayStorageTest, GetWithOutOfBoundsIndexCallsErrorHandler) {
 	static_assert(RUNTIME_CHECKS);
 
 	auto storage = ArrayStorage<BasicScalarTraits<int>, 1, 2, MockErrorHandlerProxy>();
@@ -81,17 +81,17 @@ TEST_F(ArrayStorageTest, GetWithOutOfBoundsIndexCallsErrorHandler) {
 
 }
 
-TEST_F(ArrayStorageTest, GetIsNoexceptIfErrorHandlerInvalidAccessIsNoexcept) {
+TEST_F(MatrixArrayStorageTest, GetIsNoexceptIfErrorHandlerInvalidAccessIsNoexcept) {
 	auto storage = ArrayStorage<BasicScalarTraits<float>, 1, 2, NoexceptErrorHandler>();
 	static_assert(noexcept(storage.get(0_row, 0_col)));
 }
 
-TEST_F(ArrayStorageTest, GetIsPotentiallyThrowingIfErrorHandlerInvalidAccessIsPotentiallyThrowing) {
+TEST_F(MatrixArrayStorageTest, GetIsPotentiallyThrowingIfErrorHandlerInvalidAccessIsPotentiallyThrowing) {
 	auto storage = ArrayStorage<BasicScalarTraits<float>, 1, 2, PotentiallyThrowingErrorHandler>();
 	static_assert(!noexcept(storage.get(0_row, 0_col)));
 }
 
-TEST_F(ArrayStorageTest, SetWithOutOfBoundsIndexCallsErrorHandler) {
+TEST_F(MatrixArrayStorageTest, SetWithOutOfBoundsIndexCallsErrorHandler) {
 	static_assert(RUNTIME_CHECKS);
 
 	auto storage = ArrayStorage<BasicScalarTraits<int>, 1, 2, MockErrorHandlerProxy>();
@@ -99,23 +99,23 @@ TEST_F(ArrayStorageTest, SetWithOutOfBoundsIndexCallsErrorHandler) {
 	const auto errorValue = -42;
 
 	{
-		EXPECT_CALL(*MockErrorHandler::instance, invalidAccess(1_row, 0_col)).WillOnce(testing::Return(errorValue));
+		EXPECT_CALL(*MockErrorHandler::instance, invalidAccess(1_row, 0_col));
 		storage.set(1_row, 0_col, 0);
 	}
 
 	{
-		EXPECT_CALL(*MockErrorHandler::instance, invalidAccess(0_row, 2_col)).WillOnce(testing::Return(errorValue));
+		EXPECT_CALL(*MockErrorHandler::instance, invalidAccess(0_row, 2_col));
 		storage.set(0_row, 2_col, 0);
 	}
 
 }
 
-TEST_F(ArrayStorageTest, SetIsNoexceptIfErrorHandlerInvalidAccessIsNoexcept) {
+TEST_F(MatrixArrayStorageTest, SetIsNoexceptIfErrorHandlerInvalidAccessIsNoexcept) {
 	auto storage = ArrayStorage<BasicScalarTraits<float>, 1, 2, NoexceptErrorHandler>();
 	static_assert(noexcept(storage.set(0_row, 0_col, 0.0f)));
 }
 
-TEST_F(ArrayStorageTest, SetIsPotentiallyThrowingIfErrorHandlerInvalidAccessIsPotentiallyThrowing) {
+TEST_F(MatrixArrayStorageTest, SetIsPotentiallyThrowingIfErrorHandlerInvalidAccessIsPotentiallyThrowing) {
 	auto storage = ArrayStorage<BasicScalarTraits<float>, 1, 2, PotentiallyThrowingErrorHandler>();
 	static_assert(!noexcept(storage.set(0_row, 0_col, 0.0f)));
 }

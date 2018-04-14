@@ -5,7 +5,7 @@
 #include "caramel-math/matrix/SimdStorage.hpp"
 #include "caramel-math/matrix/Matrix.hpp"
 #include "caramel-math/scalar/ScalarTraits.hpp"
-#include "MockErrorHandler.hpp"
+#include "MatrixMockErrorHandler.hpp"
 
 using namespace caramel_math;
 using namespace caramel_math::matrix;
