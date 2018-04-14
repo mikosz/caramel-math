@@ -2,7 +2,7 @@
 #include <gmock/gmock.h>
 
 #include "caramel-math/matrix/ThrowingErrorHandler.hpp"
-#include "caramel-math/matrix/SimdStorage.hpp"
+#include "caramel-math/matrix/MatrixSimdStorage.hpp"
 #include "caramel-math/matrix/Matrix.hpp"
 #include "caramel-math/scalar/ScalarTraits.hpp"
 #include "MatrixMockErrorHandler.hpp"

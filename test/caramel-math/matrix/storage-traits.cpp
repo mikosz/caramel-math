@@ -4,7 +4,7 @@
 
 #include "caramel-math/matrix/Matrix.hpp"
 #include "caramel-math/matrix/ViewStorage.hpp"
-#include "caramel-math/matrix/ArrayStorage.hpp"
+#include "caramel-math/matrix/MatrixArrayStorage.hpp"
 #include "caramel-math/matrix/AssertErrorHandler.hpp"
 #include "caramel-math/scalar/ScalarTraits.hpp"
 
