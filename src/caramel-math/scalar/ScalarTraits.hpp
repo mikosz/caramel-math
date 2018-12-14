@@ -1,8 +1,6 @@
 #ifndef CARAMELMATH_SCALAR_SCALARTRAITS_HPP__
 #define CARAMELMATH_SCALAR_SCALARTRAITS_HPP__
 
-#include <cmath>
-
 #include "../setup.hpp"
 
 namespace caramel_math::scalar {
@@ -26,7 +24,8 @@ struct BasicScalarTraits<float> {
 	static constexpr auto EPSILON = FLOAT_EPSILON;
 
 	static constexpr bool equal(float lhs, float rhs) noexcept {
-		return std::fabsf(lhs - rhs) < EPSILON;
+		const auto diff = lhs - rhs;
+		return diff < EPSILON && diff > -EPSILON;
 	}
 };
 
