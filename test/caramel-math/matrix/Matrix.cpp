@@ -2,9 +2,9 @@
 #include <gmock/gmock.h>
 
 #include "caramel-math/matrix/Matrix.hpp"
-#include "caramel-math/matrix/MatrixArrayStorage.hpp"
+#include "caramel-math/matrix/ArrayStorage.hpp"
 #include "caramel-math/matrix/AffineTransformStorage.hpp"
-#include "caramel-math/matrix/MatrixSimdStorage.hpp"
+#include "caramel-math/matrix/SimdStorage.hpp"
 #include "caramel-math/matrix/AssertErrorHandler.hpp"
 #include "caramel-math/matrix/ThrowingErrorHandler.hpp"
 #include "caramel-math/scalar/ScalarTraits.hpp"
@@ -79,7 +79,7 @@ constexpr auto IsAffineStorageV = IsAffineStorage<StorageType>::VALUE;
 
 // Family of tests for concrete storages (all storages except for views)
 template <class StorageType>
-class ConcreteStorageTest : public testing::Test {
+class MatrixConcreteStorageTest : public testing::Test {
 public:
 	static constexpr auto MUTABLE_ROWS = IsAffineStorageV<StorageType> ? 3 : StorageType::ROWS;
 };
@@ -95,7 +95,7 @@ using ConcreteStorageTypes = testing::Types<
 	SimdStorage<BasicScalarTraits<float>, AssertErrorHandler>
 	>;
 
-TYPED_TEST_CASE(ConcreteStorageTest, ConcreteStorageTypes);
+TYPED_TEST_CASE(MatrixConcreteStorageTest, ConcreteStorageTypes);
 
 // Family of tests for storages storing any value (all concrete storages except for affine transforms)
 template <class StorageType>
@@ -113,7 +113,7 @@ using AnyValueStorageTypes = testing::Types<
 
 TYPED_TEST_CASE(AnyValueStorageTest, AnyValueStorageTypes);
 
-TYPED_TEST(ConcreteStorageTest, MatricesHaveCopySemantics) {
+TYPED_TEST(MatrixConcreteStorageTest, MatricesHaveCopySemantics) {
 	using MatrixType = Matrix<TypeParam>;
 
 	auto source = MatrixType();
@@ -134,7 +134,7 @@ TYPED_TEST(ConcreteStorageTest, MatricesHaveCopySemantics) {
 	EXPECT_EQ(source, copyAssignmentTarget);
 }
 
-TYPED_TEST(ConcreteStorageTest, MatricesAreEqualityComparable) {
+TYPED_TEST(MatrixConcreteStorageTest, MatricesAreEqualityComparable) {
 	using MatrixType = Matrix<TypeParam>;
 
 	auto lhs = MatrixType();
@@ -154,7 +154,7 @@ TYPED_TEST(ConcreteStorageTest, MatricesAreEqualityComparable) {
 	EXPECT_NE(lhs, rhs);
 }
 
-TYPED_TEST(ConcreteStorageTest, EqualityComparisonIsNoexceptIfStorageIsNoexcept) {
+TYPED_TEST(MatrixConcreteStorageTest, EqualityComparisonIsNoexceptIfStorageIsNoexcept) {
 	using MatrixType = Matrix<TypeParam>;
 
 	if constexpr (std::is_same_v<typename TypeParam::ErrorHandler, ThrowingErrorHandler>) {
@@ -166,7 +166,7 @@ TYPED_TEST(ConcreteStorageTest, EqualityComparisonIsNoexceptIfStorageIsNoexcept)
 	}
 }
 
-TYPED_TEST(ConcreteStorageTest, IdentityMatrixHasOnesOnDiagonal) {
+TYPED_TEST(MatrixConcreteStorageTest, IdentityMatrixHasOnesOnDiagonal) {
 	using MatrixType = Matrix<TypeParam>;
 
 	const auto identity = MatrixType::IDENTITY;
@@ -195,7 +195,7 @@ TYPED_TEST(AnyValueStorageTest, ZeroMatrixHasZeroesEverywhere) {
 	}
 }
 
-TYPED_TEST(ConcreteStorageTest, GetAndSetHandleErrorsAppropriately) {
+TYPED_TEST(MatrixConcreteStorageTest, GetAndSetHandleErrorsAppropriately) {
 	using MatrixType = Matrix<TypeParam>;
 
 	auto matrix = MatrixType();
@@ -217,7 +217,7 @@ TYPED_TEST(ConcreteStorageTest, GetAndSetHandleErrorsAppropriately) {
 	}
 }
 
-TYPED_TEST(ConcreteStorageTest, MatricesAreConvertibleToCompatibleMatrices) {
+TYPED_TEST(MatrixConcreteStorageTest, MatricesAreConvertibleToCompatibleMatrices) {
 	using MatrixType = Matrix<TypeParam>;
 
 	MockStorageFixture scopedFixture{};
@@ -255,7 +255,7 @@ TYPED_TEST(ConcreteStorageTest, MatricesAreConvertibleToCompatibleMatrices) {
 	}
 }
 
-TYPED_TEST(ConcreteStorageTest, MultiplicationIsNoexceptIfStorageIsNoexcept) {
+TYPED_TEST(MatrixConcreteStorageTest, MultiplicationIsNoexceptIfStorageIsNoexcept) {
 	using MatrixType = Matrix<TypeParam>;
 
 	if constexpr (std::is_same_v<typename TypeParam::ErrorHandler, ThrowingErrorHandler>) {
@@ -321,7 +321,7 @@ TYPED_TEST(AnyValueStorageTest, MatrixMultiplicationByScalarIsNoexceptIfStorageI
 	}
 }
 
-TYPED_TEST(ConcreteStorageTest, TransposeTransposesMatrix) {
+TYPED_TEST(MatrixConcreteStorageTest, TransposeTransposesMatrix) {
 	using MatrixType = Matrix<TypeParam>;
 
 	auto matrix = MatrixType();

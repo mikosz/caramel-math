@@ -26,7 +26,7 @@ struct BasicScalarTraits<float> {
 	static constexpr auto EPSILON = FLOAT_EPSILON;
 
 	static constexpr bool equal(float lhs, float rhs) noexcept {
-		return std::fabsf(lhs - rhs) < EPSILON;
+		return (lhs - rhs) < EPSILON && (rhs - lhs) < EPSILON;
 	}
 };
 

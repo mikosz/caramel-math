@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "caramel-math/matrix/MatrixArrayStorage.hpp"
+#include "caramel-math/matrix/ArrayStorage.hpp"
 #include "caramel-math/scalar/ScalarTraits.hpp"
 #include "MatrixMockErrorHandler.hpp"
 

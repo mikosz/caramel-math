@@ -3,7 +3,7 @@
 #include "caramel-math/matrix/ViewStorage.hpp"
 
 #include "caramel-math/matrix/Matrix.hpp"
-#include "caramel-math/matrix/MatrixArrayStorage.hpp"
+#include "caramel-math/matrix/ArrayStorage.hpp"
 #include "caramel-math/matrix/AssertErrorHandler.hpp"
 #include "caramel-math/matrix/ThrowingErrorHandler.hpp"
 #include "caramel-math/scalar/ScalarTraits.hpp"
@@ -12,7 +12,7 @@ using namespace caramel_math;
 using namespace caramel_math::matrix;
 using namespace caramel_math::matrix::literals;
 
-TEST(ViewMatrixTest, TransposedViewHasRowsSwappedWithColumns) {
+TEST(MatrixViewMatrixTest, TransposedViewHasRowsSwappedWithColumns) {
 	using ViewedMatrix = Matrix<ArrayStorage<scalar::BasicScalarTraits<float>, 1, 2, AssertErrorHandler>>;
 	using TransposedView = decltype(viewTransposed(std::declval<ViewedMatrix&>()));
 	static_assert(TransposedView::COLUMNS == 1);
@@ -34,7 +34,7 @@ TEST(ViewMatrixText, TransposedViewStorageGetReturnsTransposedData) {
 	EXPECT_EQ(transposedView.get(1_row, 1_col), 3);
 }
 
-TEST(ViewMatrixTest, ViewStorageGetIsNoexceptIfMatrixGetIsNoexcept) {
+TEST(MatrixViewMatrixTest, ViewStorageGetIsNoexceptIfMatrixGetIsNoexcept) {
 	auto viewedMatrix = Matrix<ArrayStorage<scalar::BasicScalarTraits<float>, 2, 2, AssertErrorHandler>>();
 	static_assert(noexcept(viewedMatrix.get(0_row, 0_col)));
 
@@ -42,7 +42,7 @@ TEST(ViewMatrixTest, ViewStorageGetIsNoexceptIfMatrixGetIsNoexcept) {
 	static_assert(noexcept(transposedView.get(0_row, 0_col)));
 }
 
-TEST(ViewMatrixTest, ViewStorageGetIsPotentiallyThrowingIfMatrixGetIsPotentiallyThrowing) {
+TEST(MatrixViewMatrixTest, ViewStorageGetIsPotentiallyThrowingIfMatrixGetIsPotentiallyThrowing) {
 	auto viewedMatrix = Matrix<ArrayStorage<scalar::BasicScalarTraits<float>, 2, 2, ThrowingErrorHandler>>();
 	static_assert(!noexcept(viewedMatrix.get(0_row, 0_col)));
 
@@ -65,7 +65,7 @@ TEST(ViewMatrixText, TransposedViewStorageSetUpdatesTransposedData) {
 	EXPECT_EQ(viewedMatrix.get(0_row, 1_col), 5);
 }
 
-TEST(ViewMatrixTest, ViewStorageSetIsNoexceptIfMatrixSetIsNoexcept) {
+TEST(MatrixViewMatrixTest, ViewStorageSetIsNoexceptIfMatrixSetIsNoexcept) {
 	auto viewedMatrix = Matrix<ArrayStorage<scalar::BasicScalarTraits<float>, 2, 2, AssertErrorHandler>>();
 	static_assert(noexcept(viewedMatrix.set(0_row, 0_col, 0.0f)));
 
@@ -73,7 +73,7 @@ TEST(ViewMatrixTest, ViewStorageSetIsNoexceptIfMatrixSetIsNoexcept) {
 	static_assert(noexcept(transposedView.set(0_row, 0_col, 0.0f)));
 }
 
-TEST(ViewMatrixTest, ViewStorageSetIsPotentiallyThrowingIfMatrixSetIsPotentiallyThrowing) {
+TEST(MatrixViewMatrixTest, ViewStorageSetIsPotentiallyThrowingIfMatrixSetIsPotentiallyThrowing) {
 	auto viewedMatrix = Matrix<ArrayStorage<scalar::BasicScalarTraits<float>, 2, 2, ThrowingErrorHandler>>();
 	static_assert(!noexcept(viewedMatrix.set(0_row, 0_col, 0.0f)));
 

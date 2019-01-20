@@ -2,7 +2,7 @@
 #include <gmock/gmock.h>
 
 #include "caramel-math/matrix/ThrowingErrorHandler.hpp"
-#include "caramel-math/matrix/MatrixSimdStorage.hpp"
+#include "caramel-math/matrix/SimdStorage.hpp"
 #include "caramel-math/matrix/Matrix.hpp"
 #include "caramel-math/scalar/ScalarTraits.hpp"
 #include "MatrixMockErrorHandler.hpp"
@@ -15,14 +15,14 @@ using namespace caramel_math::matrix::test;
 
 namespace /* anonymous */ {
 
-class SimdStorageTest : public MockErrorHandlerFixtureTest {
+class MatrixSimdStorageTest : public MockErrorHandlerFixtureTest {
 };
 
-TEST_F(SimdStorageTest, IsDefaultConstructible) {
+TEST_F(MatrixSimdStorageTest, IsDefaultConstructible) {
 	auto storage = SimdStorage<BasicScalarTraits<float>, ThrowingErrorHandler>();
 }
 
-TEST_F(SimdStorageTest, IsConstructibleWithListOfValues) {
+TEST_F(MatrixSimdStorageTest, IsConstructibleWithListOfValues) {
 	using Storage = SimdStorage<BasicScalarTraits<float>, ThrowingErrorHandler>;
 	auto storage = Storage(
 		0.0f, 1.0f, 2.0f, 3.0f,
@@ -49,7 +49,7 @@ TEST_F(SimdStorageTest, IsConstructibleWithListOfValues) {
 	EXPECT_FLOAT_EQ(storage.get(3_row, 3_col), 15.0f);
 }
 
-TEST_F(SimdStorageTest, MatrixMultiplicationWorks) {
+TEST_F(MatrixSimdStorageTest, MatrixMultiplicationWorks) {
 	using Matrix = Matrix<SimdStorage<BasicScalarTraits<float>, ThrowingErrorHandler>>;
 	const auto lhs = Matrix(
 		0.0f, 1.0f, 2.0f, 3.0f,
@@ -76,7 +76,7 @@ TEST_F(SimdStorageTest, MatrixMultiplicationWorks) {
 	EXPECT_EQ(product, expected);
 }
 
-TEST_F(SimdStorageTest, ArrayStorageIsCopyable) {
+TEST_F(MatrixSimdStorageTest, ArrayStorageIsCopyable) {
 	using Storage = SimdStorage<BasicScalarTraits<float>, ThrowingErrorHandler>;
 	const auto storage = Storage(
 		0.0f, 1.0f, 2.0f, 3.0f,
@@ -104,7 +104,7 @@ TEST_F(SimdStorageTest, ArrayStorageIsCopyable) {
 	EXPECT_FLOAT_EQ(copy.get(3_row, 3_col), 15.0f);
 }
 
-TEST_F(SimdStorageTest, GetAndSetReturnAndUpdateStoredValue) {
+TEST_F(MatrixSimdStorageTest, GetAndSetReturnAndUpdateStoredValue) {
 	auto storage = SimdStorage<BasicScalarTraits<float>, ThrowingErrorHandler>();
 	storage.set(0_row, 0_col, 42.0f);
 	storage.set(0_row, 1_col, 666.0f);
@@ -113,7 +113,7 @@ TEST_F(SimdStorageTest, GetAndSetReturnAndUpdateStoredValue) {
 	EXPECT_FLOAT_EQ(storage.get(0_row, 1_col), 666.0f);
 }
 
-TEST_F(SimdStorageTest, GetAndSetReturnAndUpdateStoredColumn) {
+TEST_F(MatrixSimdStorageTest, GetAndSetReturnAndUpdateStoredColumn) {
 	auto storage = SimdStorage<BasicScalarTraits<float>, ThrowingErrorHandler>();
 	storage.set(1_col, simd::Float4({ 0.0f, 1.0f, 2.0f, 3.0f }));
 
@@ -125,7 +125,7 @@ TEST_F(SimdStorageTest, GetAndSetReturnAndUpdateStoredColumn) {
 	EXPECT_FLOAT_EQ(columnXyzw[3], 3.0f);
 }
 
-TEST_F(SimdStorageTest, GetWithOutOfBoundsIndexCallsErrorHandler) {
+TEST_F(MatrixSimdStorageTest, GetWithOutOfBoundsIndexCallsErrorHandler) {
 	static_assert(RUNTIME_CHECKS);
 
 	auto storage = SimdStorage<BasicScalarTraits<float>, MockErrorHandlerProxy>();
@@ -146,19 +146,19 @@ TEST_F(SimdStorageTest, GetWithOutOfBoundsIndexCallsErrorHandler) {
 
 }
 
-TEST_F(SimdStorageTest, GetIsNoexceptIfErrorHandlerInvalidAccessIsNoexcept) {
+TEST_F(MatrixSimdStorageTest, GetIsNoexceptIfErrorHandlerInvalidAccessIsNoexcept) {
 	auto storage = SimdStorage<BasicScalarTraits<float>, NoexceptErrorHandler>();
 	static_assert(noexcept(storage.get(0_row, 0_col)));
 	static_assert(noexcept(storage.get(0_col)));
 }
 
-TEST_F(SimdStorageTest, GetIsPotentiallyThrowingIfErrorHandlerInvalidAccessIsPotentiallyThrowing) {
+TEST_F(MatrixSimdStorageTest, GetIsPotentiallyThrowingIfErrorHandlerInvalidAccessIsPotentiallyThrowing) {
 	auto storage = SimdStorage<BasicScalarTraits<float>, PotentiallyThrowingErrorHandler>();
 	static_assert(!noexcept(storage.get(0_row, 0_col)));
 	static_assert(!noexcept(storage.get(0_col)));
 }
 
-TEST_F(SimdStorageTest, SetWithOutOfBoundsIndexCallsErrorHandler) {
+TEST_F(MatrixSimdStorageTest, SetWithOutOfBoundsIndexCallsErrorHandler) {
 	static_assert(RUNTIME_CHECKS);
 
 	auto storage = SimdStorage<BasicScalarTraits<float>, MockErrorHandlerProxy>();
@@ -177,13 +177,13 @@ TEST_F(SimdStorageTest, SetWithOutOfBoundsIndexCallsErrorHandler) {
 
 }
 
-TEST_F(SimdStorageTest, SetIsNoexceptIfErrorHandlerInvalidAccessIsNoexcept) {
+TEST_F(MatrixSimdStorageTest, SetIsNoexceptIfErrorHandlerInvalidAccessIsNoexcept) {
 	auto storage = SimdStorage<BasicScalarTraits<float>, NoexceptErrorHandler>();
 	static_assert(noexcept(storage.set(0_row, 0_col, 0.0f)));
 	static_assert(noexcept(storage.set(0_col, simd::Float4())));
 }
 
-TEST_F(SimdStorageTest, SetIsPotentiallyThrowingIfErrorHandlerInvalidAccessIsPotentiallyThrowing) {
+TEST_F(MatrixSimdStorageTest, SetIsPotentiallyThrowingIfErrorHandlerInvalidAccessIsPotentiallyThrowing) {
 	auto storage = SimdStorage<BasicScalarTraits<float>, PotentiallyThrowingErrorHandler>();
 	static_assert(!noexcept(storage.set(0_row, 0_col, 0.0f)));
 	static_assert(!noexcept(storage.set(0_col, simd::Float4())));

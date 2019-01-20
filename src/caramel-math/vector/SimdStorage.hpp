@@ -32,11 +32,9 @@ public:
 		class... CompatibleValues,
 		typename = std::enable_if_t<caramel_math::detail::AllConvertibleV<Scalar, CompatibleValues...>>
 		>
-	explicit SimdStorage(CompatibleValues&&... values) noexcept
-	{
+	explicit SimdStorage(CompatibleValues&&... values) noexcept {
 		static_assert(sizeof...(values) == SIZE, "Bad number of values provided");
 		init_(std::forward<CompatibleValues>(values)...);
-		to chyba nie tak??
 	}
 
 	float get(size_t elementIdx) const noexcept(
@@ -78,15 +76,7 @@ private:
 
 	template <class... Tail>
 	void init_(Tail&&... tail) noexcept {
-		const auto rawData = std::array<float, ROWS * COLUMNS>{ std::forward<Tail>(tail)... };
-		for (auto columnIdx = 0u; columnIdx < COLUMNS; ++columnIdx) {
-			columns_[columnIdx] = simd::Float4({
-				rawData[0 * COLUMNS + columnIdx],
-				rawData[1 * COLUMNS + columnIdx],
-				rawData[2 * COLUMNS + columnIdx],
-				rawData[3 * COLUMNS + columnIdx]
-				});
-		}
+		data_ = simd::Float4({std::forward<Tail>(tail)...});
 	}
 
 };

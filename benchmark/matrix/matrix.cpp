@@ -3,8 +3,8 @@
 #include "caramel-math/matrix/AssertErrorHandler.hpp"
 #include "caramel-math/matrix/ThrowingErrorHandler.hpp"
 #include "caramel-math/matrix/AffineTransformStorage.hpp"
-#include "caramel-math/matrix/MatrixArrayStorage.hpp"
-#include "caramel-math/matrix/MatrixSimdStorage.hpp"
+#include "caramel-math/matrix/ArrayStorage.hpp"
+#include "caramel-math/matrix/SimdStorage.hpp"
 #include "caramel-math/matrix/Matrix.hpp"
 #include "caramel-math/scalar/ScalarTraits.hpp"
 

@@ -1,7 +1,6 @@
 #ifndef CARAMELMATH_VECTOR_VECTOR_TEMPLATE_HPP__
 #define CARAMELMATH_VECTOR_VECTOR_TEMPLATE_HPP__
 
-#include "storage-traits.hpp"
 #include "vectorfwd.hpp"
 
 namespace caramel_math::vector {

@@ -13,14 +13,14 @@ using namespace caramel_math::matrix::test;
 
 namespace /* anonymous */ {
 
-class AffineTransformStorageTest : public MockErrorHandlerFixtureTest {
+class MatrixAffineTransformStorageTest : public MockErrorHandlerFixtureTest {
 };
 
-TEST_F(AffineTransformStorageTest, IsDefaultConstructible) {
+TEST_F(MatrixAffineTransformStorageTest, IsDefaultConstructible) {
 	auto storage = AffineTransformStorage<BasicScalarTraits<int>, MockErrorHandlerProxy>();
 }
 
-TEST_F(AffineTransformStorageTest, IsConstructibleWithListOfValues) {
+TEST_F(MatrixAffineTransformStorageTest, IsConstructibleWithListOfValues) {
 	using Storage = AffineTransformStorage<BasicScalarTraits<int>, MockErrorHandlerProxy>;
 	auto storage = Storage(
 		0, 1, 2, 3,
@@ -42,7 +42,7 @@ TEST_F(AffineTransformStorageTest, IsConstructibleWithListOfValues) {
 	EXPECT_EQ(storage.get(2_row, 3_col), 11);
 }
 
-TEST_F(AffineTransformStorageTest, GetAndSetReturnAndUpdateStoredValue) {
+TEST_F(MatrixAffineTransformStorageTest, GetAndSetReturnAndUpdateStoredValue) {
 	auto storage = AffineTransformStorage<BasicScalarTraits<int>, MockErrorHandlerProxy>();
 
 	storage.set(0_row, 0_col, 0);
@@ -77,7 +77,7 @@ TEST_F(AffineTransformStorageTest, GetAndSetReturnAndUpdateStoredValue) {
 	EXPECT_EQ(storage.get(3_row, 3_col), 1);
 }
 
-TEST_F(AffineTransformStorageTest, SetCallsInvalidValueForValuesNotMatchingAnAffineTransformMatrix) {
+TEST_F(MatrixAffineTransformStorageTest, SetCallsInvalidValueForValuesNotMatchingAnAffineTransformMatrix) {
 	auto storage = AffineTransformStorage<BasicScalarTraits<int>, MockErrorHandlerProxy>();
 
 	{
@@ -94,7 +94,7 @@ TEST_F(AffineTransformStorageTest, SetCallsInvalidValueForValuesNotMatchingAnAff
 	storage.set(3_row, 3_col, 0);
 }
 
-TEST_F(AffineTransformStorageTest, GetWithOutOfBoundsIndexCallsErrorHandler) {
+TEST_F(MatrixAffineTransformStorageTest, GetWithOutOfBoundsIndexCallsErrorHandler) {
 	static_assert(RUNTIME_CHECKS);
 
 	auto storage = AffineTransformStorage<BasicScalarTraits<int>, MockErrorHandlerProxy>();
@@ -115,17 +115,17 @@ TEST_F(AffineTransformStorageTest, GetWithOutOfBoundsIndexCallsErrorHandler) {
 
 }
 
-TEST_F(AffineTransformStorageTest, GetIsNoexceptIfErrorHandlerInvalidAccessIsNoexcept) {
+TEST_F(MatrixAffineTransformStorageTest, GetIsNoexceptIfErrorHandlerInvalidAccessIsNoexcept) {
 	auto storage = AffineTransformStorage<BasicScalarTraits<float>, NoexceptErrorHandler>();
 	static_assert(noexcept(storage.get(0_row, 0_col)));
 }
 
-TEST_F(AffineTransformStorageTest, GetIsPotentiallyThrowingIfErrorHandlerInvalidAccessIsPotentiallyThrowing) {
+TEST_F(MatrixAffineTransformStorageTest, GetIsPotentiallyThrowingIfErrorHandlerInvalidAccessIsPotentiallyThrowing) {
 	auto storage = AffineTransformStorage<BasicScalarTraits<float>, PotentiallyThrowingErrorHandler>();
 	static_assert(!noexcept(storage.get(0_row, 0_col)));
 }
 
-TEST_F(AffineTransformStorageTest, SetWithOutOfBoundsIndexCallsErrorHandler) {
+TEST_F(MatrixAffineTransformStorageTest, SetWithOutOfBoundsIndexCallsErrorHandler) {
 	static_assert(RUNTIME_CHECKS);
 
 	auto storage = AffineTransformStorage<BasicScalarTraits<int>, MockErrorHandlerProxy>();
@@ -144,12 +144,12 @@ TEST_F(AffineTransformStorageTest, SetWithOutOfBoundsIndexCallsErrorHandler) {
 
 }
 
-TEST_F(AffineTransformStorageTest, SetIsNoexceptIfErrorHandlerInvalidAccessIsNoexcept) {
+TEST_F(MatrixAffineTransformStorageTest, SetIsNoexceptIfErrorHandlerInvalidAccessIsNoexcept) {
 	auto storage = AffineTransformStorage<BasicScalarTraits<float>, NoexceptErrorHandler>();
 	static_assert(noexcept(storage.set(0_row, 0_col, 0.0f)));
 }
 
-TEST_F(AffineTransformStorageTest, SetIsPotentiallyThrowingIfErrorHandlerInvalidAccessIsPotentiallyThrowing) {
+TEST_F(MatrixAffineTransformStorageTest, SetIsPotentiallyThrowingIfErrorHandlerInvalidAccessIsPotentiallyThrowing) {
 	auto storage = AffineTransformStorage<BasicScalarTraits<float>, PotentiallyThrowingErrorHandler>();
 	static_assert(!noexcept(storage.set(0_row, 0_col, 0.0f)));
 }
